@@ -1,9 +1,9 @@
 package main
 
 import (
-	"argo-clientgo-test/kubectl"
 	"fmt"
 	"io/ioutil"
+	"kubeIT/kubectl"
 	"log"
 	"time"
 )
