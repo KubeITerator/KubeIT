@@ -1,9 +1,10 @@
 package apistructs
 
 type IteratedWorkflow struct {
-	Files    []string `json:"files"`
-	Splitter Splitter `json:"splitter"`
-	Workload Workflow `json:"workload"`
+	File         string   `json:"files"`
+	SharedVolume Volume   `json:"sharedVolume,omitempty"`
+	Splitter     Splitter `json:"splitter"`
+	Workload     Workload `json:"workload"`
 }
 type Params struct {
 	Parameter string `json:"parameter"`
@@ -12,11 +13,18 @@ type Splitter struct {
 	Type   string   `json:"type"`
 	Params []Params `json:"params"`
 }
-type Workload struct {
-	Name string `json:"name"`
-	Exec string `json:"exec,omitempty"`
+type WorkflowTemplate struct {
+	Name       string `json:"name"`
+	Entrypoint string `json:"entrypoint"`
+	Exec       string `json:"exec,omitempty"`
 }
-type Workflow struct {
-	InitWorkload Workload `json:"init-workload,omitempty"`
-	MainWorkload Workload `json:"main-workload"`
+type Workload struct {
+	InitWorkload WorkflowTemplate `json:"initWorkload,omitempty"`
+	MainWorkload WorkflowTemplate `json:"mainWorkload"`
+}
+
+type Volume struct {
+	Name         string `json:"name"`
+	Size         string `json:"size"`
+	StorageClass string `json:"storageClass"`
 }
