@@ -1,11 +1,11 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"kubeIT/helpers"
 	"os"
-	"strings"
 )
 
 func main() {
@@ -22,17 +22,20 @@ func main() {
 		os.Exit(2)
 	}
 
-	matches := yparser.ParseYaml(string(content))
+	matches, err := yparser.ParseYaml(string(content))
 
-	for _, match := range matches {
-
-		fmt.Println(match)
+	if err != nil {
+		fmt.Println(err.Error())
 	}
 
-	testsplit := strings.Split(string(content), "\n")
+	bytes, err := json.Marshal(matches)
 
-	fmt.Println(len(testsplit))
-	fmt.Println(testsplit[3][16:44])
+	fmt.Println(string(bytes))
+
+	//testsplit := strings.Split(string(content), "\n")
+
+	//fmt.Println(len(testsplit))
+	//fmt.Println(testsplit[3][16:44])
 
 	//content, err := ioutil.ReadFile("workflowtemplate.yaml")
 	//if err != nil {

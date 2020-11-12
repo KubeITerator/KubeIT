@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"bufio"
+	"errors"
 	"regexp"
 	"strings"
 )
@@ -11,14 +12,14 @@ type YamlParser struct {
 }
 
 type Match struct {
-	Type ParamType
-	Line int
-	Loc  []int
+	Type ParamType `json:"paramtype"`
+	Line int       `json:"linenumber"`
+	Loc  []int     `json:"location"`
 }
 
 type ParamType struct {
-	Category string
-	Name     string
+	Category string `json:"category"`
+	Name     string `json:"name"`
 }
 
 func (yp *YamlParser) Init() error {
@@ -27,7 +28,7 @@ func (yp *YamlParser) Init() error {
 	return err
 }
 
-func (yp *YamlParser) ParseYaml(yaml string) (matches []Match) {
+func (yp *YamlParser) ParseYaml(yaml string) (matches []Match, err error) {
 	counter := 0
 	scanner := bufio.NewScanner(strings.NewReader(yaml))
 
@@ -35,13 +36,18 @@ func (yp *YamlParser) ParseYaml(yaml string) (matches []Match) {
 
 	for scanner.Scan() {
 		if loc := yp.kubitRegex.FindStringIndex(scanner.Text()); loc != nil {
-
-			pType := ParamType{scanner.Text()}
-			match = Match{Line: counter, Type: scanner.Text()[loc[0]:loc[1]], Loc: loc}
+			pTypeStrings := strings.Split(strings.TrimRight(strings.TrimLeft(scanner.Text()[loc[0]:loc[1]], "{{"), "}}"), ".")
+			var pType ParamType
+			if pTypeStrings[0] == "kubeit" {
+				pType = ParamType{pTypeStrings[1], pTypeStrings[2]}
+			} else {
+				return nil, errors.New("parsing failed: contained non kubeIT parameter")
+			}
+			match = Match{Line: counter, Type: pType, Loc: loc}
 			matches = append(matches, match)
 		}
 		counter++
 	}
 
-	return matches
+	return matches, nil
 }
