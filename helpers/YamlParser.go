@@ -11,28 +11,17 @@ type YamlParser struct {
 	kubitRegex *regexp.Regexp
 }
 
-type Match struct {
-	Type ParamType `json:"paramtype"`
-	Line int       `json:"linenumber"`
-	Loc  []int     `json:"location"`
-}
-
-type ParamType struct {
-	Category string `json:"category"`
-	Name     string `json:"name"`
-}
-
 func (yp *YamlParser) Init() error {
 	var err error
 	yp.kubitRegex, err = regexp.Compile("{{kubeit\\..*\\..*}}")
 	return err
 }
 
-func (yp *YamlParser) ParseYaml(yaml string) (matches []Match, err error) {
+func (yp *YamlParser) ParseYaml(yaml string) (matches []ParsedParam, err error) {
 	counter := 0
 	scanner := bufio.NewScanner(strings.NewReader(yaml))
 
-	match := Match{}
+	match := ParsedParam{}
 
 	for scanner.Scan() {
 		if loc := yp.kubitRegex.FindStringIndex(scanner.Text()); loc != nil {
@@ -43,11 +32,12 @@ func (yp *YamlParser) ParseYaml(yaml string) (matches []Match, err error) {
 			} else {
 				return nil, errors.New("parsing failed: contained non kubeIT parameter")
 			}
-			match = Match{Line: counter, Type: pType, Loc: loc}
+			match = ParsedParam{Line: counter, Type: pType, Loc: loc}
 			matches = append(matches, match)
 		}
 		counter++
 	}
 
 	return matches, nil
+
 }
