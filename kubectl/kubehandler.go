@@ -36,11 +36,6 @@ func (kube *KubeHandler) StartClient(namespace string) {
 	if err != nil {
 		panic(err.Error())
 	}
-
-	//config, err := rest.InClusterConfig()
-	//if err != nil {
-	//	panic(err)
-	//}
 	argoclientset, err := wfv1.NewForConfig(config)
 	kube.k8sclient, err = kubernetes.NewForConfig(config)
 	if err != nil {

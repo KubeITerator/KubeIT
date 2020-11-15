@@ -11,12 +11,9 @@ type ParamType struct {
 	Name     string `json:"name"`
 }
 
-type MappingList struct {
-	Mappings []Mapping
-}
-
 type Mapping struct {
-	ParsedParam  ParsedParam
-	ApiReference string
-	Default      interface{}
+	Category string `json:"category"`
+	Name     string `json:"name"`
+	Default  string `json:"default"`
+	Required bool   `json:"required"`
 }

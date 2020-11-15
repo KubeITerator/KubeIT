@@ -1,0 +1,99 @@
+[
+  {
+    "category":"workflow",
+    "name":"nameprefix",
+    "default": "kubeit-test",
+    "required": false
+  },
+
+  {
+    "category":"volume",
+    "name":"volumename",
+    "default": "argoblastvol",
+    "required": false
+  },
+
+  {
+    "category":"volume",
+    "name":"storageclass",
+    "default": "managed-nfs-storage",
+    "required": false
+  },
+
+  {
+    "category":"volume",
+    "name":"size",
+    "default": "20Gi",
+    "required": false
+  },
+
+  {
+    "category":"input",
+    "name":"inputdata",
+    "default": "",
+    "required": true
+  },
+
+  {
+    "category":"input",
+    "name":"precommand",
+    "default": "",
+    "required": true
+  },
+
+  {
+    "category":"input",
+    "name":"wfcommand",
+    "default": "",
+    "required": true
+  },
+
+  {
+    "category":"input",
+    "name":"splitparams",
+    "default": "",
+    "required": true
+  },
+
+  {
+    "category":"init",
+    "name":"name",
+    "default": "",
+    "required": true
+  },
+
+  {
+    "category":"init",
+    "name":"entrypoint",
+    "default": "",
+    "required": true
+  },
+
+  {
+    "category":"splitter",
+    "name":"name",
+    "default": "",
+    "required": true
+  },
+
+  {
+    "category":"splitter",
+    "name":"entrypoint",
+    "default": "",
+    "required": true
+  },
+
+  {
+    "category":"workload",
+    "name":"name",
+    "default": "",
+    "required": true
+  },
+
+  {
+    "category":"workload",
+    "name":"entrypoint",
+    "default": "",
+    "required": true
+  }
+]

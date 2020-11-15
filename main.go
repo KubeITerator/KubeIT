@@ -28,6 +28,8 @@ func main() {
 		fmt.Println(err.Error())
 	}
 
+	fmt.Println(matches)
+
 	bytes, err := json.Marshal(matches)
 
 	fmt.Println(string(bytes))
