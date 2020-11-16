@@ -1,0 +1,68 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: {{kubeit.workflow.nameprefix}}
+spec:
+# Volume definition, requirement is a 'ReadWriteMany' StorageClass
+  volumeClaimTemplates:
+  - metadata:
+      name: {{kubeit.volume.volumename}}
+    spec:
+      accessModes: [ "ReadWriteMany" ]
+      storageClassName: {{kubeit.volume.storageclass}}
+      resources:
+        requests:
+          storage: {{kubeit.volume.size}}
+# Input arguments/parameters
+  arguments:
+   parameters:
+    - name: INPUTDATA
+      value: {{kubeit.input.inputdata}}
+    - name: PRE-COMMAND
+      value: {{kubeit.input.precommand}}
+    - name: WFCOMMAND
+      value: {{kubeit.input.wfcommand}}
+    - name: SPLIT-PARAMS
+      value: |
+       {{kubeit.input.splitparams}}
+    - name: VOLUMENAME
+      value: {{kubeit.volume.volumename}}
+  entrypoint: workflow
+  # Workflow template, consists of multiple workflow template definitions
+  # Default: init (pre-processing) -> splitter -> workload -> collection (post-processing)
+  templates:
+  - name: workflow
+    steps:
+      - - name: call-init-template
+          templateRef:
+            name: {{kubeit.init.name}}
+            template: {{kubeit.init.entrypoint}}
+          arguments:
+            parameters:
+            - name: INPUTDATA
+              value: "{{workflow.parameters.INPUTDATA}}"
+            - name: COMMAND
+              value: "{{workflow.parameters.PRE-COMMAND}}"
+        - name: splitter
+          templateRef:
+            name: {{kubeit.splitter.name}}
+            template: {{kubeit.splitter.entrypoint}}
+            arguments:
+              parameters:
+                - name: DATASOURCE
+                  value: "{{workflow.parameters.INPUTDATA}}"
+                - name: SPLITPARAMS
+                  value: "{{workflow.parameters.SPLIT-PARAMS}}"
+      - - name: call-workload-template
+          templateRef:
+            name: {{kubeit.workload.name}}
+            template: {{kubeit.workload.entrypoint}}
+          arguments: 
+            parameters:
+            - name: INPUTDATA
+              value: "{{workflow.parameters.INPUTDATA}}"
+            - name: COMMAND
+              value: "{{workflow.parameters.WFCOMMAND}}"
+            - name: HEADER
+              value: "{{item}}"
+          withParam: "{{steps.splitter.outputs.result}}"

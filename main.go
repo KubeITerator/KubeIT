@@ -1,38 +1,50 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"kubeIT/helpers"
+	"kubeIT/kubectl"
 	"os"
 )
 
 func main() {
 
-	//kH := kubectl.KubeHandler{}
-	//kH.StartClient("biokube")
+	kH := kubectl.KubeHandler{}
+	kH.StartClient("biokube")
 
-	content, err := ioutil.ReadFile("workflowtemplate.yaml")
-	yparser := helpers.YamlParser{}
-	err = yparser.Init()
+	cH := helpers.ConfigHandler{}
+	err := cH.Init("defaultconfig", "/home/beavis/go/src/kubeIT/default-settings/", &kH)
+
+	//content, err := ioutil.ReadFile("workflowtemplate.yaml")
+	//yparser := helpers.YamlParser{}
+	//err = yparser.Init()
+	//
+	if err != nil {
+		fmt.Println("Error in init")
+		os.Exit(2)
+	}
+
+	ml, err := cH.GetDefaults()
 
 	if err != nil {
 		fmt.Println("Error in parsing")
 		os.Exit(2)
 	}
 
-	matches, err := yparser.ParseYaml(string(content))
+	fmt.Println(ml)
 
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-
-	fmt.Println(matches)
-
-	bytes, err := json.Marshal(matches)
-
-	fmt.Println(string(bytes))
+	//
+	//matches, err := yparser.ParseYaml(string(content))
+	//
+	//if err != nil {
+	//	fmt.Println(err.Error())
+	//}
+	//
+	//fmt.Println(matches)
+	//
+	//bytes, err := json.Marshal(matches)
+	//
+	//fmt.Println(string(bytes))
 
 	//testsplit := strings.Split(string(content), "\n")
 
