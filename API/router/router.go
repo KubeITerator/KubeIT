@@ -4,6 +4,8 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"kubeIT/API/router/routes"
+	"kubeIT/helpers"
+	"kubeIT/kubectl"
 )
 
 type Router struct {
@@ -31,16 +33,14 @@ func (route *Router) Run(address string) {
 }
 
 //noinspection ALL
-func (route *Router) CreateRoutes() {
+func (route *Router) CreateRoutes(cHandler *helpers.ConfigHandler, kHandler *kubectl.KubeHandler) {
 	router := route.engine
 
 	// Jobs / Pods Group
 	v1 := router.Group("/v1")
 	v1.Use(route.AuthTokenMiddleware())
 	{
-		v1.POST("/apply", routes.V1ApplyWorkflow())
-		//v1.POST("/submit_split", routes.V1SubmitJobsSplit())
-		//v1.GET("/status", routes.V1GetStatus())
+		v1.POST("/apply", routes.V1ApplyWorkflow(cHandler, kHandler))
 	}
 
 	router.NoRoute(route.AuthTokenMiddleware(), func(c *gin.Context) {

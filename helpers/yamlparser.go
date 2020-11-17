@@ -32,7 +32,7 @@ func (yp *YamlParser) ParseYaml(yaml string) (matches []ParsedParam, err error) 
 			} else {
 				return nil, errors.New("parsing failed: contained non kubeIT parameter")
 			}
-			match = ParsedParam{Line: counter, PType: pType, Loc: loc}
+			match = ParsedParam{Line: counter, ParamType: pType, Loc: loc}
 			matches = append(matches, match)
 		}
 		counter++

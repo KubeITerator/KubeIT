@@ -1,9 +1,9 @@
 package helpers
 
 type ParsedParam struct {
-	PType ParamType `json:"paramtype"`
-	Line  int       `json:"linenumber"`
-	Loc   []int     `json:"location"`
+	ParamType `json:",inline"`
+	Line      int   `json:"linenumber"`
+	Loc       []int `json:"location"`
 }
 
 type ParamType struct {
@@ -11,15 +11,9 @@ type ParamType struct {
 	Name     string `json:"name"`
 }
 
-type MappingList struct {
-	MappingList []Mapping `json:"mappinglist"`
-}
-
 type Mapping struct {
-	Category string `json:"category"`
-	Name     string `json:"name"`
-	Default  string `json:"default"`
-	Required bool   `json:"required"`
+	ParamType `json:",inline"`
+	Defaults  `json:",inline"`
 }
 
 type Defaults struct {
@@ -28,8 +22,8 @@ type Defaults struct {
 }
 
 type CombinedMappings struct {
-	ParsedParam
-	Defaults
+	ParsedParam `json:",inline"`
+	Defaults    `json:",inline"`
 }
 
 type ConfigMapData struct {
