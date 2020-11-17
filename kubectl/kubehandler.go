@@ -82,14 +82,14 @@ func (kube *KubeHandler) GetConfigMap(name string) (content map[string]string, e
 	}
 }
 
-func (kube *KubeHandler) StartWorkflow(yaml string) error {
+func (kube *KubeHandler) StartWorkflow(yaml string) (wfname string, err error) {
 
 	wf, err := kube.ValidateYaml(yaml)
 	if err != nil {
 		fmt.Println("Error in validating Yaml")
 		fmt.Println("Yaml:")
 		fmt.Print(yaml)
-		return err
+		return "", err
 	}
 	// Create Deployment
 	fmt.Println("Creating job...")
@@ -98,10 +98,10 @@ func (kube *KubeHandler) StartWorkflow(yaml string) error {
 		fmt.Println("Error in creating Job")
 		fmt.Println("Yaml:")
 		fmt.Print(yaml)
-		return err
+		return "", err
 	}
 	fmt.Printf("Created Job %q.\n", result.GetObjectMeta().GetName())
-	return nil
+	return result.GetObjectMeta().GetName(), nil
 }
 
 //func (kube *KubeHandler) GetNumOfPods() (num int) {

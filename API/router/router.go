@@ -5,7 +5,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"kubeIT/API/router/routes"
 	"kubeIT/helpers"
-	"kubeIT/kubectl"
 )
 
 type Router struct {
@@ -33,14 +32,14 @@ func (route *Router) Run(address string) {
 }
 
 //noinspection ALL
-func (route *Router) CreateRoutes(cHandler *helpers.ConfigHandler, kHandler *kubectl.KubeHandler) {
+func (route *Router) CreateRoutes(cHandler *helpers.ConfigHandler) {
 	router := route.engine
 
 	// Jobs / Pods Group
 	v1 := router.Group("/v1")
 	v1.Use(route.AuthTokenMiddleware())
 	{
-		v1.POST("/apply", routes.V1ApplyWorkflow(cHandler, kHandler))
+		v1.POST("/apply", routes.V1ApplyWorkflow(cHandler))
 	}
 
 	router.NoRoute(route.AuthTokenMiddleware(), func(c *gin.Context) {

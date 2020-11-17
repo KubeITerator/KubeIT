@@ -5,10 +5,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"kubeIT/API/apistructs"
 	"kubeIT/helpers"
-	"kubeIT/kubectl"
 )
 
-func V1ApplyWorkflow(cHandler *helpers.ConfigHandler, kHandler *kubectl.KubeHandler) gin.HandlerFunc {
+func V1ApplyWorkflow(cHandler *helpers.ConfigHandler) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
 		parameters := apistructs.WorkflowParams{}
@@ -20,9 +19,19 @@ func V1ApplyWorkflow(cHandler *helpers.ConfigHandler, kHandler *kubectl.KubeHand
 			return
 		}
 
-		fmt.Println(parameters)
+		wfname, missing, err := cHandler.ValidateParamsAndSubmit(parameters)
+
+		if err != nil {
+			fmt.Println("Failed Template Creation: Unknown Parameters or error")
+			fmt.Println(err.Error())
+			c.AbortWithStatusJSON(400, gin.H{"error": "Unknown JSON, cannot bind request to struct."})
+			return
+		}
+
 		c.JSON(200, gin.H{
-			"status": "Successful",
+			"status":  "Successful",
+			"wfname":  wfname,
+			"missing": missing,
 		})
 	}
 }

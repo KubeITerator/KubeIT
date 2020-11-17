@@ -23,6 +23,6 @@ func main() {
 
 	router := network.Router{}
 	router.Init("TEST")
-	router.CreateRoutes(&cH, &kH)
+	router.CreateRoutes(&cH)
 
 }

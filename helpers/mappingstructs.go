@@ -30,3 +30,8 @@ type ConfigMapData struct {
 	mappings []CombinedMappings
 	yaml     string
 }
+
+type FinalMapping struct {
+	ParsedParam `json:",inline"`
+	FinalValue  string `json:"finalValue"`
+}

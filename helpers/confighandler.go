@@ -1,11 +1,14 @@
 package helpers
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"kubeIT/API/apistructs"
 	"kubeIT/kubectl"
+	"strings"
 )
 
 type ConfigHandler struct {
@@ -152,4 +155,71 @@ func (ch *ConfigHandler) GetCurrentConfig() (cmdata *ConfigMapData, err error) {
 
 	return ch.CurrentConfig, nil
 
+}
+
+func (ch *ConfigHandler) ValidateParamsAndSubmit(params apistructs.WorkflowParams) (wfname string, missingParams []string, err error) {
+	ccfg, err := ch.GetCurrentConfig()
+
+	if err != nil {
+		return "", nil, err
+	}
+
+	var fMappings []FinalMapping
+
+MapLoop:
+	for _, mapping := range ccfg.mappings {
+		if mapping.Required {
+			for _, userinput := range params {
+				if mapping.Category+"."+mapping.Name == userinput.Parameter { // TODO: Reformat ugly if-conditional
+					fMappings = append(fMappings, FinalMapping{
+						ParsedParam: mapping.ParsedParam,
+						FinalValue:  fmt.Sprintf("%v", userinput.Value),
+					})
+
+					continue MapLoop
+
+				}
+			}
+
+			missingParams = append(missingParams, mapping.Category+"."+mapping.Name)
+
+		} else {
+			fMappings = append(fMappings, FinalMapping{
+				ParsedParam: mapping.ParsedParam,
+				FinalValue:  mapping.Defaults.Default, // TODO: Allow for type interface values
+			})
+		}
+	}
+
+	if len(missingParams) == 0 {
+		yaml := ch.BuildYaml(fMappings)
+		fmt.Println(yaml)
+		//wfname, err = ch.handler.StartWorkflow(yaml)
+		if err != nil {
+			return "", nil, err
+		}
+	}
+
+	return wfname, missingParams, err
+
+}
+
+func (ch *ConfigHandler) BuildYaml(fMappings []FinalMapping) (yaml string) {
+
+	scanner := bufio.NewScanner(strings.NewReader(ch.CurrentConfig.yaml))
+	linenumber := 0
+LineLoop:
+	for scanner.Scan() {
+
+		for _, fMapping := range fMappings {
+			if linenumber == fMapping.Line {
+				yaml += scanner.Text()[:fMapping.Loc[0]] + fMapping.FinalValue + scanner.Text()[fMapping.Loc[1]+1:] + "\n"
+				linenumber++
+				continue LineLoop
+			}
+		}
+		yaml += scanner.Text()
+	}
+
+	return yaml
 }
