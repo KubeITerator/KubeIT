@@ -28,10 +28,17 @@ func V1ApplyWorkflow(cHandler *helpers.ConfigHandler) gin.HandlerFunc {
 			return
 		}
 
-		c.JSON(200, gin.H{
-			"status":  "Successful",
-			"wfname":  wfname,
-			"missing": missing,
-		})
+		if len(missing) > 0 {
+			c.JSON(200, gin.H{
+				"status":  "Missing parameters",
+				"missing": missing,
+			})
+		} else {
+			c.JSON(200, gin.H{
+				"status": "Successful",
+				"wfname": wfname,
+			})
+		}
+
 	}
 }

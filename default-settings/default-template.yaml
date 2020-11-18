@@ -2,8 +2,10 @@ apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
   generateName: {{kubeit.workflow.nameprefix}}
+  namespace: kubeit
 spec:
 # Volume definition, requirement is a 'ReadWriteMany' StorageClass
+  serviceAccountName: argo
   volumeClaimTemplates:
   - metadata:
       name: {{kubeit.volume.volumename}}
@@ -43,16 +45,18 @@ spec:
               value: "{{workflow.parameters.INPUTDATA}}"
             - name: COMMAND
               value: "{{workflow.parameters.PRE-COMMAND}}"
+            - name: VOLUMENAME
+              value: "{{workflow.parameters.VOLUMENAME}}"
         - name: splitter
           templateRef:
             name: {{kubeit.splitter.name}}
             template: {{kubeit.splitter.entrypoint}}
-            arguments:
-              parameters:
-                - name: DATASOURCE
-                  value: "{{workflow.parameters.INPUTDATA}}"
-                - name: SPLITPARAMS
-                  value: "{{workflow.parameters.SPLIT-PARAMS}}"
+          arguments:
+            parameters:
+            - name: DATASOURCE
+              value: "{{workflow.parameters.INPUTDATA}}"
+            - name: SPLITPARAMS
+              value: "{{workflow.parameters.SPLIT-PARAMS}}"
       - - name: call-workload-template
           templateRef:
             name: {{kubeit.workload.name}}
@@ -63,6 +67,8 @@ spec:
               value: "{{workflow.parameters.INPUTDATA}}"
             - name: COMMAND
               value: "{{workflow.parameters.WFCOMMAND}}"
+            - name: VOLUMENAME
+              value: "{{workflow.parameters.VOLUMENAME}}"
             - name: HEADER
               value: "{{item}}"
           withParam: "{{steps.splitter.outputs.result}}"

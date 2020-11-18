@@ -25,6 +25,13 @@ func (ch *ConfigHandler) Init(cfname, defaultPath string, handler *kubectl.KubeH
 	ch.handler = handler
 	ch.yp = &YamlParser{}
 	err := ch.yp.Init()
+
+	if err != nil {
+		return err
+	}
+
+	_, err = ch.GetCurrentConfig()
+
 	return err
 }
 
@@ -194,7 +201,7 @@ MapLoop:
 	if len(missingParams) == 0 {
 		yaml := ch.BuildYaml(fMappings)
 		fmt.Println(yaml)
-		//wfname, err = ch.handler.StartWorkflow(yaml)
+		wfname, err = ch.handler.StartWorkflow(yaml)
 		if err != nil {
 			return "", nil, err
 		}
@@ -213,12 +220,13 @@ LineLoop:
 
 		for _, fMapping := range fMappings {
 			if linenumber == fMapping.Line {
-				yaml += scanner.Text()[:fMapping.Loc[0]] + fMapping.FinalValue + scanner.Text()[fMapping.Loc[1]+1:] + "\n"
+				yaml += scanner.Text()[:fMapping.Loc[0]] + fMapping.FinalValue + scanner.Text()[fMapping.Loc[1]:] + "\n"
 				linenumber++
 				continue LineLoop
 			}
 		}
-		yaml += scanner.Text()
+		yaml += scanner.Text() + "\n"
+		linenumber++
 	}
 
 	return yaml
