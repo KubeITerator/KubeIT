@@ -3,14 +3,13 @@ package routes
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"kubeIT/API/apistructs"
 	"kubeIT/helpers"
 )
 
 func V1ApplyWorkflow(cHandler *helpers.ConfigHandler) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
-		parameters := apistructs.WorkflowParams{}
+		parameters := make(map[string]interface{})
 		err := c.BindJSON(&parameters)
 		if err != nil {
 			fmt.Println("CreateTemplate: Unknown JSON, cannot bind request to struct")

@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"k8s.io/apimachinery/pkg/api/errors"
-	"kubeIT/API/apistructs"
 	"kubeIT/kubectl"
 	"strings"
 )
@@ -164,7 +163,7 @@ func (ch *ConfigHandler) GetCurrentConfig() (cmdata *ConfigMapData, err error) {
 
 }
 
-func (ch *ConfigHandler) ValidateParamsAndSubmit(params apistructs.WorkflowParams) (wfname string, missingParams []string, err error) {
+func (ch *ConfigHandler) ValidateParamsAndSubmit(params map[string]interface{}) (wfname string, missingParams []string, err error) {
 	ccfg, err := ch.GetCurrentConfig()
 
 	if err != nil {
@@ -176,11 +175,11 @@ func (ch *ConfigHandler) ValidateParamsAndSubmit(params apistructs.WorkflowParam
 MapLoop:
 	for _, mapping := range ccfg.mappings {
 		if mapping.Required {
-			for _, userinput := range params {
-				if mapping.Category+"."+mapping.Name == userinput.Parameter { // TODO: Reformat ugly if-conditional
+			for key, value := range params {
+				if mapping.Category+"."+mapping.Name == key { // TODO: Reformat ugly if-conditional
 					fMappings = append(fMappings, FinalMapping{
 						ParsedParam: mapping.ParsedParam,
-						FinalValue:  fmt.Sprintf("%v", userinput.Value),
+						FinalValue:  fmt.Sprintf("%v", value),
 					})
 
 					continue MapLoop
