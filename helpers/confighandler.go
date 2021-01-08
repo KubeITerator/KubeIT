@@ -3,9 +3,10 @@ package helpers
 import (
 	"bufio"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
-	"k8s.io/apimachinery/pkg/api/errors"
+	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"kubeIT/kubectl"
 	"strings"
 )
@@ -48,34 +49,9 @@ func (ch *ConfigHandler) CreateNewConfig() (err error) {
 		return err
 	}
 
-	mappings, err := ch.GetDefaults()
-
-	if err != nil {
-		return err
-	}
-
-	var cMaps []CombinedMappings
-
-	for _, match := range matches {
-		for _, mapping := range mappings {
-
-			if mapping.Category == match.Category {
-				if mapping.Name == match.Name {
-					cMaps = append(cMaps, CombinedMappings{
-						ParsedParam: match,
-						Defaults:    mapping.Defaults,
-					})
-
-				}
-
-			}
-
-		}
-
-	}
+	newTemplate := Template{Name: "default", Yaml: string(yamlcontent), PParams: matches}
 	ch.CurrentConfig = &ConfigMapData{
-		mappings: cMaps,
-		yaml:     string(yamlcontent),
+		Templates: []Template{newTemplate},
 	}
 
 	err = ch.SaveConfigMap()
@@ -89,11 +65,11 @@ func (ch *ConfigHandler) CreateNewConfig() (err error) {
 
 func (ch *ConfigHandler) SaveConfigMap() error {
 
-	convToString, err := json.Marshal(ch.CurrentConfig.mappings)
+	convToString, err := json.Marshal(ch.CurrentConfig)
 	if err != nil {
 		return err
 	}
-	mapping := map[string]string{"yaml": ch.CurrentConfig.yaml, "mappings": string(convToString)}
+	mapping := map[string]string{"data": string(convToString)}
 	err = ch.handler.CreateOrUpdateConfigMap(ch.configName, mapping)
 
 	if err != nil {
@@ -110,36 +86,17 @@ func (ch *ConfigHandler) LoadConfigMap() error {
 		return err
 	}
 
-	var mappings []CombinedMappings
+	var mapdata ConfigMapData
 
-	err = json.Unmarshal([]byte(cfg["mappings"]), &mappings)
+	err = json.Unmarshal([]byte(cfg["data"]), &mapdata)
 
 	if err != nil {
 		return err
 	}
 
-	ch.CurrentConfig = &ConfigMapData{
-		mappings: mappings,
-		yaml:     cfg["yaml"],
-	}
+	ch.CurrentConfig = &mapdata
 
 	return nil
-}
-
-func (ch *ConfigHandler) GetDefaults() (ml []Mapping, err error) {
-	content, err := ioutil.ReadFile(ch.defaultPath + "/mappings.json")
-	if err != nil {
-		fmt.Println("Error in reading file")
-		return nil, err
-	}
-
-	err = json.Unmarshal(content, &ml)
-
-	if err != nil {
-		fmt.Println("Error in unmarshaling")
-		return nil, err
-	}
-	return ml, nil
 }
 
 func (ch *ConfigHandler) GetCurrentConfig() (cmdata *ConfigMapData, err error) {
@@ -148,7 +105,7 @@ func (ch *ConfigHandler) GetCurrentConfig() (cmdata *ConfigMapData, err error) {
 	} else {
 		err = ch.LoadConfigMap()
 
-		if errors.IsNotFound(err) {
+		if k8serrors.IsNotFound(err) {
 			err = ch.CreateNewConfig()
 			if err != nil {
 				return nil, err
@@ -163,42 +120,54 @@ func (ch *ConfigHandler) GetCurrentConfig() (cmdata *ConfigMapData, err error) {
 
 }
 
-func (ch *ConfigHandler) ValidateParamsAndSubmit(params map[string]interface{}) (wfname string, missingParams []string, err error) {
-	ccfg, err := ch.GetCurrentConfig()
+func (ch *ConfigHandler) ValidateParamsAndSubmit(params map[string]string) (wfname string, missingParams []string, err error) {
 
-	if err != nil {
+	var cTemp Template
+
+	if params["template"] == "" {
 		return "", nil, err
+	} else {
+
+		for _, tmpl := range ch.CurrentConfig.Templates {
+			if tmpl.Name == params["template"] {
+				cTemp = tmpl
+				break
+			}
+		}
+
+		if cTemp.Name == "" {
+			return "", nil, errors.New("unknown template")
+		}
 	}
 
+	// TODO: Create generic name
 	var fMappings []FinalMapping
 
-MapLoop:
-	for _, mapping := range ccfg.mappings {
-		if mapping.Required {
-			for key, value := range params {
-				if mapping.Category+"."+mapping.Name == key { // TODO: Reformat ugly if-conditional
-					fMappings = append(fMappings, FinalMapping{
-						ParsedParam: mapping.ParsedParam,
-						FinalValue:  fmt.Sprintf("%v", value),
-					})
+Pploop:
+	for _, pparam := range cTemp.PParams {
 
-					continue MapLoop
-
-				}
+		for k, v := range params {
+			if pparam.Category+"."+pparam.Name == k {
+				fMappings = append(fMappings, FinalMapping{
+					ParsedParam: pparam,
+					FinalValue:  v,
+				})
+				continue Pploop
 			}
+		}
 
-			missingParams = append(missingParams, mapping.Category+"."+mapping.Name)
-
-		} else {
+		if pparam.Default != "" {
 			fMappings = append(fMappings, FinalMapping{
-				ParsedParam: mapping.ParsedParam,
-				FinalValue:  mapping.Defaults.Default, // TODO: Allow for type interface values
+				ParsedParam: pparam,
+				FinalValue:  pparam.Default,
 			})
+		} else {
+			missingParams = append(missingParams, pparam.Category+"."+pparam.Name)
 		}
 	}
 
 	if len(missingParams) == 0 {
-		yaml := ch.BuildYaml(fMappings)
+		yaml := ch.BuildYaml(fMappings, cTemp.Yaml)
 		fmt.Println(yaml)
 		wfname, err = ch.handler.StartWorkflow(yaml)
 		if err != nil {
@@ -210,23 +179,23 @@ MapLoop:
 
 }
 
-func (ch *ConfigHandler) BuildYaml(fMappings []FinalMapping) (yaml string) {
+func (ch *ConfigHandler) BuildYaml(fMappings []FinalMapping, inputYaml string) (outputYaml string) {
 
-	scanner := bufio.NewScanner(strings.NewReader(ch.CurrentConfig.yaml))
+	scanner := bufio.NewScanner(strings.NewReader(inputYaml))
 	linenumber := 0
 LineLoop:
 	for scanner.Scan() {
 
 		for _, fMapping := range fMappings {
 			if linenumber == fMapping.Line {
-				yaml += scanner.Text()[:fMapping.Loc[0]] + fMapping.FinalValue + scanner.Text()[fMapping.Loc[1]:] + "\n"
+				outputYaml += scanner.Text()[:fMapping.Loc[0]] + fMapping.FinalValue + scanner.Text()[fMapping.Loc[1]:] + "\n"
 				linenumber++
 				continue LineLoop
 			}
 		}
-		yaml += scanner.Text() + "\n"
+		outputYaml += scanner.Text() + "\n"
 		linenumber++
 	}
 
-	return yaml
+	return outputYaml
 }

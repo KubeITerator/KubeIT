@@ -9,7 +9,7 @@ import (
 func V1ApplyWorkflow(cHandler *helpers.ConfigHandler) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
-		parameters := make(map[string]interface{})
+		parameters := make(map[string]string)
 		err := c.BindJSON(&parameters)
 		if err != nil {
 			fmt.Println("CreateTemplate: Unknown JSON, cannot bind request to struct")

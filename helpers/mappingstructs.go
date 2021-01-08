@@ -2,8 +2,9 @@ package helpers
 
 type ParsedParam struct {
 	ParamType `json:",inline"`
-	Line      int   `json:"linenumber"`
-	Loc       []int `json:"location"`
+	Line      int    `json:"linenumber"`
+	Loc       []int  `json:"location"`
+	Default   string `json:"default"`
 }
 
 type ParamType struct {
@@ -11,24 +12,15 @@ type ParamType struct {
 	Name     string `json:"name"`
 }
 
-type Mapping struct {
-	ParamType `json:",inline"`
-	Defaults  `json:",inline"`
+type Template struct {
+	Name    string        `json:"name"`
+	Yaml    string        `json:"yaml"`
+	PParams []ParsedParam `json:"params"`
 }
 
-type Defaults struct {
-	Default  string `json:"default"`
-	Required bool   `json:"required"`
-}
-
-type CombinedMappings struct {
-	ParsedParam `json:",inline"`
-	Defaults    `json:",inline"`
-}
-
+// This can be used to store additional information.
 type ConfigMapData struct {
-	mappings []CombinedMappings
-	yaml     string
+	Templates []Template `json:"templates"`
 }
 
 type FinalMapping struct {
