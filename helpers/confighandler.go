@@ -13,7 +13,7 @@ import (
 
 type ConfigHandler struct {
 	configName, defaultPath string
-	handler                 *kubectl.KubeHandler
+	kubeHandler             *kubectl.KubeHandler
 	yp                      *YamlParser
 	CurrentConfig           *ConfigMapData
 }
@@ -22,7 +22,7 @@ type ConfigHandler struct {
 func (ch *ConfigHandler) Init(cfname, defaultPath string, handler *kubectl.KubeHandler) error {
 	ch.configName = cfname
 	ch.defaultPath = defaultPath
-	ch.handler = handler
+	ch.kubeHandler = handler
 	ch.yp = &YamlParser{}
 	err := ch.yp.Init()
 
@@ -70,7 +70,7 @@ func (ch *ConfigHandler) SaveConfigMap() error {
 		return err
 	}
 	mapping := map[string]string{"data": string(convToString)}
-	err = ch.handler.CreateOrUpdateConfigMap(ch.configName, mapping)
+	err = ch.kubeHandler.CreateOrUpdateConfigMap(ch.configName, mapping)
 
 	if err != nil {
 		return err
@@ -80,7 +80,7 @@ func (ch *ConfigHandler) SaveConfigMap() error {
 }
 
 func (ch *ConfigHandler) LoadConfigMap() error {
-	cfg, err := ch.handler.GetConfigMap(ch.configName)
+	cfg, err := ch.kubeHandler.GetConfigMap(ch.configName)
 
 	if err != nil {
 		return err
@@ -91,7 +91,11 @@ func (ch *ConfigHandler) LoadConfigMap() error {
 	err = json.Unmarshal([]byte(cfg["data"]), &mapdata)
 
 	if err != nil {
-		return err
+		fmt.Println("Error in parsing existing config")
+		err = ch.CreateNewConfig()
+		if err != nil {
+			return err
+		}
 	}
 
 	ch.CurrentConfig = &mapdata
@@ -125,7 +129,7 @@ func (ch *ConfigHandler) ValidateParamsAndSubmit(params map[string]string) (wfna
 	var cTemp Template
 
 	if params["template"] == "" {
-		return "", nil, err
+		return "", []string{"template"}, err
 	} else {
 
 		for _, tmpl := range ch.CurrentConfig.Templates {
@@ -136,6 +140,7 @@ func (ch *ConfigHandler) ValidateParamsAndSubmit(params map[string]string) (wfna
 		}
 
 		if cTemp.Name == "" {
+			fmt.Println("war error")
 			return "", nil, errors.New("unknown template")
 		}
 	}
@@ -169,7 +174,7 @@ Pploop:
 	if len(missingParams) == 0 {
 		yaml := ch.BuildYaml(fMappings, cTemp.Yaml)
 		fmt.Println(yaml)
-		wfname, err = ch.handler.StartWorkflow(yaml)
+		wfname, err = ch.kubeHandler.StartWorkflow(yaml)
 		if err != nil {
 			return "", nil, err
 		}

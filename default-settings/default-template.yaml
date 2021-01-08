@@ -1,20 +1,20 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
-  generateName: {{kubeit.workflow.nameprefix}}
+  generateName: {{kubeit.workflow.nameprefix}} # Default: "kubeit-test"
   namespace: kubeit
 spec:
 # Volume definition, requirement is a 'ReadWriteMany' StorageClass
   serviceAccountName: argo
   volumeClaimTemplates:
   - metadata:
-      name: {{kubeit.volume.volumename}}
+      name: {{kubeit.volume.volumename}} # Default: "argoblastvol"
     spec:
       accessModes: [ "ReadWriteMany" ]
-      storageClassName: {{kubeit.volume.storageclass}}
+      storageClassName: {{kubeit.volume.storageclass}} # Default: "managed-nfs-storage"
       resources:
         requests:
-          storage: {{kubeit.volume.size}}
+          storage: {{kubeit.volume.size}} # Default: "20Gi"
 # Input arguments/parameters
   arguments:
    parameters:
@@ -28,7 +28,7 @@ spec:
       value: |
        {{kubeit.input.splitparams}}
     - name: VOLUMENAME
-      value: {{kubeit.volume.volumename}}
+      value: {{kubeit.volume.volumename}} # Default: "argoblastvol"
   entrypoint: workflow
   # Workflow template, consists of multiple workflow template definitions
   # Default: init (pre-processing) -> splitter -> workload -> collection (post-processing)
@@ -69,6 +69,8 @@ spec:
               value: "{{workflow.parameters.WFCOMMAND}}"
             - name: VOLUMENAME
               value: "{{workflow.parameters.VOLUMENAME}}"
+            - name: INDEX
+              value: "{{item.index}}"
             - name: HEADER
-              value: "{{item}}"
+              value: "{{item.range}}"
           withParam: "{{steps.splitter.outputs.result}}"

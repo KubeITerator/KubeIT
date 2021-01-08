@@ -104,6 +104,20 @@ func (kube *KubeHandler) StartWorkflow(yaml string) (wfname string, err error) {
 	return result.GetObjectMeta().GetName(), nil
 }
 
+func (kube *KubeHandler) GetWorkflow(name string) (err error) {
+	cm, err := kube.argoclient.Get(name, metav1.GetOptions{})
+
+	fmt.Println(cm.Annotations)
+
+	cm.Annotations = map[string]string{"Test": "Value"}
+
+	cm2, err := kube.argoclient.Update(cm)
+	fmt.Println(cm2.Annotations)
+
+	return err
+
+}
+
 //func (kube *KubeHandler) GetNumOfPods() (num int) {
 //	pods, err := kube.client.List(metav1.ListOptions{})
 //	if err != nil {

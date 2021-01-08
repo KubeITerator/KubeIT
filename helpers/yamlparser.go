@@ -15,7 +15,7 @@ type YamlParser struct {
 func (yp *YamlParser) Init() error {
 	var err error
 	yp.kubitRegex, err = regexp.Compile("{{kubeit\\..*\\..*}}")
-	yp.defaultRegex, err = regexp.Compile("`# Default: \".*\"`gm")
+	yp.defaultRegex, err = regexp.Compile("(?i)# Default: \".*\"")
 	return err
 }
 

@@ -26,7 +26,6 @@ func V1ApplyWorkflow(cHandler *helpers.ConfigHandler) gin.HandlerFunc {
 			c.AbortWithStatusJSON(400, gin.H{"error": "Unknown JSON, cannot bind request to struct."})
 			return
 		}
-
 		if len(missing) > 0 {
 			c.JSON(200, gin.H{
 				"status":  "Missing parameters",
