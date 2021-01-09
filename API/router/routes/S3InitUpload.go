@@ -7,8 +7,8 @@ import (
 )
 
 type InitRequest struct {
-	Key   string `json:"key"`
-	Multi bool   `json:"multi"`
+	Filename string `json:"filename"`
+	Multi    bool   `json:"multi"`
 }
 type InitResponse struct {
 	Passkey string `json:"passkey"`
@@ -27,7 +27,7 @@ func S3InitUpload(cHandler *helpers.ConfigHandler) gin.HandlerFunc {
 			return
 		}
 
-		passkey, err := cHandler.S3hander.InitUpload(initRequest.Key, initRequest.Multi)
+		passkey, err := cHandler.S3hander.InitUpload(initRequest.Filename, initRequest.Multi)
 
 		if err != nil {
 			fmt.Println("Failed to init S3")

@@ -108,9 +108,6 @@ func (kube *KubeHandler) StartWorkflow(yaml string) (wfname string, err error) {
 func (kube *KubeHandler) GetWorkflow(name string) (wf *argov1alpha.Workflow, err error) {
 	wf, err = kube.argoclient.Get(name, metav1.GetOptions{})
 
-	//cm.Annotations = map[string]string{"Test": "Value"}
-	//cm2, err := kube.argoclient.Update(cm)
-
 	return wf, err
 
 }
@@ -119,10 +116,22 @@ func (kube *KubeHandler) GetWorkflows(project string) (wfs *argov1alpha.Workflow
 	labelmap := map[string]string{"project": project}
 	wfs, err = kube.argoclient.List(metav1.ListOptions{LabelSelector: labels.SelectorFromSet(labelmap).String()})
 
-	//cm.Annotations = map[string]string{"Test": "Value"}
-	//cm2, err := kube.argoclient.Update(cm)
-
 	return wfs, err
+
+}
+
+func (kube *KubeHandler) DeleteWorkflow(name string) (err error) {
+	err = kube.argoclient.Delete(name, &metav1.DeleteOptions{})
+
+	return err
+
+}
+
+func (kube *KubeHandler) DeleteWorkflows(project string) (err error) {
+	labelmap := map[string]string{"project": project}
+	err = kube.argoclient.DeleteCollection(&metav1.DeleteOptions{}, metav1.ListOptions{LabelSelector: labels.SelectorFromSet(labelmap).String()})
+
+	return err
 
 }
 

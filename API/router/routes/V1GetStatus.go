@@ -35,7 +35,7 @@ func V1GetStatus(cHandler *helpers.ConfigHandler) gin.HandlerFunc {
 
 			if len(wfs.Items) == 0 {
 				fmt.Println("Failed to query project: " + project)
-				c.AbortWithStatusJSON(400, gin.H{"error": "Failed to query project: " + project})
+				c.AbortWithStatusJSON(400, gin.H{"error": "No workflows found for project: " + project})
 				return
 			}
 

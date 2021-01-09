@@ -85,9 +85,10 @@ func (api *Api) UploadFileToS3(filename string, data []byte) (err error) {
 	return err
 }
 
-func (api *Api) InitUpload(key string, multi bool) (passkey string, err error) {
+func (api *Api) InitUpload(filename string, multi bool) (passkey string, err error) {
 
 	passkey = Rand8()
+	key := "/inputdata/" + passkey + "/" + filename
 	if api.CheckIfExists(key) {
 		return "", errors.New("key already exists")
 	}
@@ -319,6 +320,21 @@ func (api *Api) GetPresignedDownloadURL(passkey string) (url string, err error) 
 	params := &s3.GetObjectInput{
 		Bucket: aws.String(api.BaseBucket),
 		Key:    aws.String(part.Key),
+	}
+
+	request, _ := api.S3.GetObjectRequest(params)
+
+	url, err = request.Presign(time.Hour * 48)
+
+	return url, err
+
+}
+
+func (api *Api) GetPresignedDownloadInternal(key string) (url string, err error) {
+
+	params := &s3.GetObjectInput{
+		Bucket: aws.String(api.BaseBucket),
+		Key:    aws.String(key),
 	}
 
 	request, _ := api.S3.GetObjectRequest(params)

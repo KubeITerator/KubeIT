@@ -37,12 +37,24 @@ func (route *Router) CreateRoutes(cHandler *helpers.ConfigHandler) {
 
 	// Jobs / Pods Group
 	v1 := router.Group("/v1")
+	s3 := router.Group("/s3")
+
+	s3.Use(route.AuthTokenMiddleware())
+	{
+		v1.POST("/init", routes.S3InitUpload(cHandler))
+		v1.GET("/upload", routes.S3GetUploadURL(cHandler))
+		v1.GET("/finish", routes.S3FinishUpload(cHandler))
+		v1.GET("/download", routes.S3GetDownloadURL(cHandler))
+	}
+
 	v1.Use(route.AuthTokenMiddleware())
 	{
 		v1.POST("/apply", routes.V1ApplyWorkflow(cHandler))
 		v1.GET("/status", routes.V1GetStatus(cHandler))
 		v1.GET("/template", routes.V1GetTemplates(cHandler))
 		v1.POST("/createtemplate", routes.V1CreateTemplates(cHandler))
+		v1.GET("/result", routes.V1GetResult(cHandler))
+		v1.GET("/delete", routes.V1DeleteWorkflow(cHandler))
 	}
 
 	router.NoRoute(route.AuthTokenMiddleware(), func(c *gin.Context) {

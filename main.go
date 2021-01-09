@@ -15,7 +15,7 @@ func main() {
 	kH.StartClient("kubeit")
 
 	s3 := s3handler.Api{}
-	s3.InitS3("", "", "kubeit")
+	s3.InitS3("", "RegionOne", "kubeit")
 
 	cH := helpers.ConfigHandler{}
 	err := cH.Init("kubeit-defaultconfig", "/home/beavis/go/src/kubeIT/default-settings/", &kH, &s3)
