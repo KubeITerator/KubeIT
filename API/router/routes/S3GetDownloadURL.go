@@ -6,10 +6,6 @@ import (
 	"kubeIT/helpers"
 )
 
-type Download struct {
-	URL string `json:"url"`
-}
-
 func S3GetDownloadURL(cHandler *helpers.ConfigHandler) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
@@ -29,7 +25,7 @@ func S3GetDownloadURL(cHandler *helpers.ConfigHandler) gin.HandlerFunc {
 			return
 		}
 
-		c.JSON(200, Download{URL: url})
+		c.JSON(200, URLResponse{URL: url})
 		return
 
 	}

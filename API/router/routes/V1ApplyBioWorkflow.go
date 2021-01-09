@@ -27,7 +27,7 @@ func V1ApplyWorkflow(cHandler *helpers.ConfigHandler) gin.HandlerFunc {
 			return
 		}
 		if len(missing) > 0 {
-			c.JSON(200, gin.H{
+			c.JSON(400, gin.H{
 				"status":  "Missing parameters",
 				"missing": missing,
 			})

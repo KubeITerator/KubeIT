@@ -6,10 +6,6 @@ import (
 	"kubeIT/helpers"
 )
 
-type Finish struct {
-	URL string `json:"url"`
-}
-
 func S3FinishUpload(cHandler *helpers.ConfigHandler) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
