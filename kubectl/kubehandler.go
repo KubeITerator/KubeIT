@@ -9,6 +9,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	k8sYaml "k8s.io/apimachinery/pkg/util/yaml"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
@@ -104,17 +105,24 @@ func (kube *KubeHandler) StartWorkflow(yaml string) (wfname string, err error) {
 	return result.GetObjectMeta().GetName(), nil
 }
 
-func (kube *KubeHandler) GetWorkflow(name string) (err error) {
-	cm, err := kube.argoclient.Get(name, metav1.GetOptions{})
+func (kube *KubeHandler) GetWorkflow(name string) (wf *argov1alpha.Workflow, err error) {
+	wf, err = kube.argoclient.Get(name, metav1.GetOptions{})
 
-	fmt.Println(cm.Annotations)
+	//cm.Annotations = map[string]string{"Test": "Value"}
+	//cm2, err := kube.argoclient.Update(cm)
 
-	cm.Annotations = map[string]string{"Test": "Value"}
+	return wf, err
 
-	cm2, err := kube.argoclient.Update(cm)
-	fmt.Println(cm2.Annotations)
+}
 
-	return err
+func (kube *KubeHandler) GetWorkflows(project string) (wfs *argov1alpha.WorkflowList, err error) {
+	labelmap := map[string]string{"project": project}
+	wfs, err = kube.argoclient.List(metav1.ListOptions{LabelSelector: labels.SelectorFromSet(labelmap).String()})
+
+	//cm.Annotations = map[string]string{"Test": "Value"}
+	//cm2, err := kube.argoclient.Update(cm)
+
+	return wfs, err
 
 }
 

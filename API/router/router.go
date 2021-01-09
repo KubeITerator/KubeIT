@@ -40,6 +40,9 @@ func (route *Router) CreateRoutes(cHandler *helpers.ConfigHandler) {
 	v1.Use(route.AuthTokenMiddleware())
 	{
 		v1.POST("/apply", routes.V1ApplyWorkflow(cHandler))
+		v1.GET("/status", routes.V1GetStatus(cHandler))
+		v1.GET("/template", routes.V1GetTemplates(cHandler))
+		v1.POST("/createtemplate", routes.V1CreateTemplates(cHandler))
 	}
 
 	router.NoRoute(route.AuthTokenMiddleware(), func(c *gin.Context) {

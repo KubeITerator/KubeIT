@@ -8,21 +8,24 @@ import (
 	"io/ioutil"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"kubeIT/kubectl"
+	"kubeIT/s3handler"
 	"strings"
 )
 
 type ConfigHandler struct {
 	configName, defaultPath string
-	kubeHandler             *kubectl.KubeHandler
+	KubeHandler             *kubectl.KubeHandler
+	S3hander                *s3handler.Api
 	yp                      *YamlParser
 	CurrentConfig           *ConfigMapData
 }
 
 // Constructor-ish
-func (ch *ConfigHandler) Init(cfname, defaultPath string, handler *kubectl.KubeHandler) error {
+func (ch *ConfigHandler) Init(cfname, defaultPath string, handler *kubectl.KubeHandler, s3handler *s3handler.Api) error {
+	ch.S3hander = s3handler
 	ch.configName = cfname
 	ch.defaultPath = defaultPath
-	ch.kubeHandler = handler
+	ch.KubeHandler = handler
 	ch.yp = &YamlParser{}
 	err := ch.yp.Init()
 
@@ -63,6 +66,39 @@ func (ch *ConfigHandler) CreateNewConfig() (err error) {
 	return nil
 }
 
+func (ch *ConfigHandler) AddAditionalTemplate(name, yaml string) (err error) {
+
+	matches, err := ch.yp.ParseYaml(yaml)
+
+	if err != nil {
+		return err
+	}
+
+	if ch.TemplateExists(name) {
+		return errors.New("template already exists")
+	}
+
+	newTemplate := Template{Name: name, Yaml: yaml, PParams: matches}
+	ch.CurrentConfig.Templates = append(ch.CurrentConfig.Templates, newTemplate)
+
+	err = ch.SaveConfigMap()
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (ch *ConfigHandler) TemplateExists(name string) bool {
+	for _, temp := range ch.CurrentConfig.Templates {
+		if temp.Name == name {
+			return true
+		}
+	}
+	return false
+}
+
 func (ch *ConfigHandler) SaveConfigMap() error {
 
 	convToString, err := json.Marshal(ch.CurrentConfig)
@@ -70,7 +106,7 @@ func (ch *ConfigHandler) SaveConfigMap() error {
 		return err
 	}
 	mapping := map[string]string{"data": string(convToString)}
-	err = ch.kubeHandler.CreateOrUpdateConfigMap(ch.configName, mapping)
+	err = ch.KubeHandler.CreateOrUpdateConfigMap(ch.configName, mapping)
 
 	if err != nil {
 		return err
@@ -80,7 +116,7 @@ func (ch *ConfigHandler) SaveConfigMap() error {
 }
 
 func (ch *ConfigHandler) LoadConfigMap() error {
-	cfg, err := ch.kubeHandler.GetConfigMap(ch.configName)
+	cfg, err := ch.KubeHandler.GetConfigMap(ch.configName)
 
 	if err != nil {
 		return err
@@ -108,7 +144,6 @@ func (ch *ConfigHandler) GetCurrentConfig() (cmdata *ConfigMapData, err error) {
 		return ch.CurrentConfig, nil
 	} else {
 		err = ch.LoadConfigMap()
-
 		if k8serrors.IsNotFound(err) {
 			err = ch.CreateNewConfig()
 			if err != nil {
@@ -174,7 +209,7 @@ Pploop:
 	if len(missingParams) == 0 {
 		yaml := ch.BuildYaml(fMappings, cTemp.Yaml)
 		fmt.Println(yaml)
-		wfname, err = ch.kubeHandler.StartWorkflow(yaml)
+		wfname, err = ch.KubeHandler.StartWorkflow(yaml)
 		if err != nil {
 			return "", nil, err
 		}

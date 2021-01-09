@@ -3,6 +3,8 @@ kind: Workflow
 metadata:
   generateName: {{kubeit.workflow.nameprefix}} # Default: "kubeit-test"
   namespace: kubeit
+  labels:
+    project: {{kubeit.project.name}} # Default: "kubeit"
 spec:
 # Volume definition, requirement is a 'ReadWriteMany' StorageClass
   serviceAccountName: argo
@@ -30,6 +32,9 @@ spec:
     - name: VOLUMENAME
       value: {{kubeit.volume.volumename}} # Default: "argoblastvol"
   entrypoint: workflow
+  podGC:
+    strategy: OnPodSuccess
+
   # Workflow template, consists of multiple workflow template definitions
   # Default: init (pre-processing) -> splitter -> workload -> collection (post-processing)
   templates:
@@ -74,3 +79,17 @@ spec:
             - name: HEADER
               value: "{{item.range}}"
           withParam: "{{steps.splitter.outputs.result}}"
+      - - name: create-result
+          template: create-result
+  - name: create-result
+    container:
+      image: alpine:latest
+      command: [ sh, -c ]
+      args: [ "exit" ]
+      volumeMounts:
+        - name: {{kubeit.volume.volumename}} # Default: "argoblastvol"
+          mountPath: /data/
+    outputs:
+      artifacts:
+        - name: {{kubeit.outputfile.name}} # Default: "output"
+          path: /data/output/
