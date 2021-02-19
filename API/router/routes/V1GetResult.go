@@ -12,7 +12,7 @@ type ArtifactResponse struct {
 	URL string `json:"url"`
 }
 
-func V1GetResult(cHandler *helpers.ConfigHandler) gin.HandlerFunc {
+func V1GetResult(cHandler *helpers.Controller) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
 		workflow := c.Query("name")

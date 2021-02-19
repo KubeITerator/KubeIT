@@ -14,7 +14,7 @@ type InitResponse struct {
 	Passkey string `json:"passkey"`
 }
 
-func S3InitUpload(cHandler *helpers.ConfigHandler) gin.HandlerFunc {
+func S3InitUpload(cHandler *helpers.Controller) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
 		initRequest := InitRequest{}

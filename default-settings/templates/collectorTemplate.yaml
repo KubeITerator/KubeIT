@@ -1,0 +1,46 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: collector-template
+spec:
+  arguments:
+    parameters:
+      - name: COMMAND
+        value: ""
+      - name: VOLUMENAME
+        value: ""
+      - name: IMAGE
+        value: ""
+      - name: RESULTNAME
+        value: ""
+
+  # Workflow template and order
+  templates:
+    - name: collector
+      inputs:
+        parameters:
+          - name: INPUTDATA
+          - name: COMMAND
+          - name: VOLUMENAME
+          - name: IMAGE
+          - name: RESULTNAME
+      container:
+        image: "{{inputs.parameters.IMAGE}}"
+        securityContext:
+          runAsUser: 10001
+        resources:
+          limits:
+            memory: "2Gi"
+            cpu: "2000m"
+          requests:
+            memory: "1Gi"
+            cpu: "1000m"
+        command: [sh, -c]
+        args: ["{{inputs.parameters.COMMAND}}"]
+        volumeMounts:
+          - name: "{{inputs.parameters.VOLUMENAME}}"
+            mountPath: /data/
+        outputs:
+          artifacts:
+            - name: "{{inputs.parameters.RESULTNAME}}"
+              path: /data/output/

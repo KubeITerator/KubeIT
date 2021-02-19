@@ -34,8 +34,8 @@ type UploadedPart struct {
 	PartNumber int64
 }
 
-func Rand8() (str string) {
-	b := make([]byte, 10)
+func Rand16() (str string) {
+	b := make([]byte, 16)
 	rand.Read(b)
 	str = fmt.Sprintf("%x", b)
 	return
@@ -51,9 +51,13 @@ func (api *Api) InitS3(ip, region, basebucket string) {
 
 	api.Session = session.Must(session.NewSession(s3Config))
 
+	api.Multiparts = make(map[string]*MultiPart)
+
 	api.S3 = s3.New(api.Session)
 }
 func (api *Api) CheckIfExists(key string) (exists bool) {
+
+	fmt.Println("Checking for existence: " + key)
 
 	input := &s3.HeadObjectInput{
 		Bucket: aws.String(api.BaseBucket),
@@ -86,8 +90,9 @@ func (api *Api) UploadFileToS3(filename string, data []byte) (err error) {
 }
 
 func (api *Api) InitUpload(filename string, multi bool) (passkey string, err error) {
+	fmt.Println(multi)
 
-	passkey = Rand8()
+	passkey = Rand16()
 	key := "/inputdata/" + passkey + "/" + filename
 	if api.CheckIfExists(key) {
 		return "", errors.New("key already exists")
@@ -130,13 +135,13 @@ func (api *Api) GetPresignedURL(passkey string) (url string, err error) {
 
 	}
 
-	if part.Multi {
+	if !part.Multi {
 		request, _ := api.S3.PutObjectRequest(&s3.PutObjectInput{
 			Bucket: aws.String(api.BaseBucket),
 			Key:    aws.String(part.Key),
 		})
 
-		url, err = request.Presign(time.Minute * 60)
+		url, err = request.Presign(time.Minute * 180)
 
 		return url, err
 
@@ -261,21 +266,21 @@ func (api *Api) FinishUpload(passkey string) (err error) {
 			return err
 		}
 
-		time.Sleep(10)
+		time.Sleep(3 * time.Second)
 		if api.CheckIfExists(parts.Key) {
+			fmt.Println("Multipart Upload completed.")
 			return nil
 		} else {
-			fmt.Println("Multipart Upload completed.")
 			return errors.New("does not exist")
 		}
 
 	} else {
 
-		time.Sleep(10)
+		time.Sleep(3 * time.Second)
 		if api.CheckIfExists(parts.Key) {
+			fmt.Println("Upload completed.")
 			return nil
 		} else {
-			fmt.Println("Multipart Upload completed.")
 			return errors.New("does not exist")
 		}
 	}

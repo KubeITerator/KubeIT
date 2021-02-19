@@ -10,7 +10,7 @@ type URLResponse struct {
 	URL string `json:"url"`
 }
 
-func S3GetUploadURL(cHandler *helpers.ConfigHandler) gin.HandlerFunc {
+func S3GetUploadURL(cHandler *helpers.Controller) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
 		passkey := c.Query("key")

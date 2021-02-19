@@ -4,13 +4,13 @@ metadata:
   generateName: {{kubeit.workflow.nameprefix}} # Default: "kubeit-test"
   namespace: kubeit
   labels:
-    project: {{kubeit.project.name}} # Default: "kubeit"
+    project: {{kubeit.project.name}}
 spec:
 # Volume definition, requirement is a 'ReadWriteMany' StorageClass
   serviceAccountName: argo
   volumeClaimTemplates:
   - metadata:
-      name: {{kubeit.volume.volumename}} # Default: "argoblastvol"
+      name: {{kubeit.volume.volumename}} # Default: "kubeit"
     spec:
       accessModes: [ "ReadWriteMany" ]
       storageClassName: {{kubeit.volume.storageclass}} # Default: "managed-nfs-storage"
@@ -22,15 +22,28 @@ spec:
    parameters:
     - name: INPUTDATA
       value: {{kubeit.input.inputdata}}
-    - name: PRE-COMMAND
-      value: {{kubeit.input.precommand}}
-    - name: WFCOMMAND
-      value: {{kubeit.input.wfcommand}}
+    - name: VOLUMENAME
+      value: {{kubeit.volume.volumename}} # Default: "kubeit"
+    - name: INITCOMMAND
+      value: {{kubeit.init.command}} # Default: "mkdir /data/database/; mkdir /data/output; makeblastdb -in /data/inputfile -out /data/database/db -dbtype prot -hash_index"
+    - name: INITIMAGE
+      value: {{kubeit.init.image}} # Default: "ncbi/blast:2.11.0"
+    - name: SPLITTERIMAGE
+      value: {{kubeit.splitter.image}} # Default: "stanni/biosplitter:v0.0.3"
     - name: SPLIT-PARAMS
       value: |
-       {{kubeit.input.splitparams}}
-    - name: VOLUMENAME
-      value: {{kubeit.volume.volumename}} # Default: "argoblastvol"
+       {{kubeit.splitter.params}}
+    - name: WORKLOADIMAGE
+      value: {{kubeit.workload.command}} # Default: "stanni/alpine-blastp:v0.0.1"
+    - name: WORKLOADCOMMAND
+      value: {{kubeit.workload.command}} # Default: "blastp -query /inputs/inputfile.faa -db /data/database/db -num_alignments 20000 -comp_based_stats 0 -seg no -outfmt 6 -evalue 1e-05 -out /data/output/output.result"
+    - name: COLLECTORIMAGE
+      value: "alpine:latest"
+    - name: COLLECTORCOMMAND
+      value: "exit"
+    - name: RESULTNAME
+      value: "output"
+
   entrypoint: workflow
   podGC:
     strategy: OnPodSuccess
@@ -40,34 +53,40 @@ spec:
   templates:
   - name: workflow
     steps:
-      - - name: call-init-template
+      - - name: init
           templateRef:
-            name: {{kubeit.init.name}}
-            template: {{kubeit.init.entrypoint}}
+            name: init-template
+            template: init
           arguments:
             parameters:
             - name: INPUTDATA
               value: "{{workflow.parameters.INPUTDATA}}"
             - name: COMMAND
-              value: "{{workflow.parameters.PRE-COMMAND}}"
+              value: "{{workflow.parameters.INITCOMMAND}}"
             - name: VOLUMENAME
               value: "{{workflow.parameters.VOLUMENAME}}"
+            - name: IMAGE
+              value: "{{workflow.parameters.INITIMAGE}}"
         - name: splitter
           templateRef:
-            name: {{kubeit.splitter.name}}
-            template: {{kubeit.splitter.entrypoint}}
+            name: splitter-template
+            template: splitter
           arguments:
             parameters:
             - name: DATASOURCE
               value: "{{workflow.parameters.INPUTDATA}}"
+            - name: IMAGE
+              value: "{{workflow.parameters.SPLITTERIMAGE}}"
             - name: SPLITPARAMS
               value: "{{workflow.parameters.SPLIT-PARAMS}}"
-      - - name: call-workload-template
+      - - name: workloads
           templateRef:
-            name: {{kubeit.workload.name}}
-            template: {{kubeit.workload.entrypoint}}
+            name: main-template
+            template: main
           arguments: 
             parameters:
+            - name: IMAGE
+              value: "{{workflow.parameters.WORKLOADIMAGE}}"
             - name: INPUTDATA
               value: "{{workflow.parameters.INPUTDATA}}"
             - name: COMMAND
@@ -79,17 +98,16 @@ spec:
             - name: HEADER
               value: "{{item.range}}"
           withParam: "{{steps.splitter.outputs.result}}"
-      - - name: create-result
-          template: create-result
-  - name: create-result
-    container:
-      image: alpine:latest
-      command: [ sh, -c ]
-      args: [ "exit" ]
-      volumeMounts:
-        - name: {{kubeit.volume.volumename}} # Default: "argoblastvol"
-          mountPath: /data/
-    outputs:
-      artifacts:
-        - name: {{kubeit.outputfile.name}} # Default: "output"
-          path: /data/output/
+      - - name: collection
+          templateRef:
+            name: collector-template
+            template: collector
+          arguments:
+            parameters:
+             - name: VOLUMENAME
+               value: "{{workflow.parameters.VOLUMENAME}}"
+             - name: IMAGE
+               value: "{{workflow.parameters.COLLECTORIMAGE}}"
+             - name: RESULTNAME
+               value: "{{workflow.parameters.RESULTNAME}}"
+

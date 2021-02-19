@@ -6,7 +6,7 @@ import (
 	"kubeIT/helpers"
 )
 
-func V1DeleteWorkflow(cHandler *helpers.ConfigHandler) gin.HandlerFunc {
+func V1DeleteWorkflow(cHandler *helpers.Controller) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
 		var workflow, project string

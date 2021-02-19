@@ -12,7 +12,7 @@ import (
 	"strings"
 )
 
-type ConfigHandler struct {
+type Controller struct {
 	configName, defaultPath string
 	KubeHandler             *kubectl.KubeHandler
 	S3hander                *s3handler.Api
@@ -21,7 +21,7 @@ type ConfigHandler struct {
 }
 
 // Constructor-ish
-func (ch *ConfigHandler) Init(cfname, defaultPath string, handler *kubectl.KubeHandler, s3handler *s3handler.Api) error {
+func (ch *Controller) Init(cfname, defaultPath string, handler *kubectl.KubeHandler, s3handler *s3handler.Api) error {
 	ch.S3hander = s3handler
 	ch.configName = cfname
 	ch.defaultPath = defaultPath
@@ -38,7 +38,7 @@ func (ch *ConfigHandler) Init(cfname, defaultPath string, handler *kubectl.KubeH
 	return err
 }
 
-func (ch *ConfigHandler) CreateNewConfig() (err error) {
+func (ch *Controller) CreateNewConfig() (err error) {
 
 	yamlcontent, err := ioutil.ReadFile(ch.defaultPath + "/default-template.yaml")
 
@@ -66,7 +66,7 @@ func (ch *ConfigHandler) CreateNewConfig() (err error) {
 	return nil
 }
 
-func (ch *ConfigHandler) AddAditionalTemplate(name, yaml string) (err error) {
+func (ch *Controller) AddAditionalTemplate(name, yaml string) (err error) {
 
 	matches, err := ch.yp.ParseYaml(yaml)
 
@@ -90,7 +90,7 @@ func (ch *ConfigHandler) AddAditionalTemplate(name, yaml string) (err error) {
 	return nil
 }
 
-func (ch *ConfigHandler) TemplateExists(name string) bool {
+func (ch *Controller) TemplateExists(name string) bool {
 	for _, temp := range ch.CurrentConfig.Templates {
 		if temp.Name == name {
 			return true
@@ -99,7 +99,7 @@ func (ch *ConfigHandler) TemplateExists(name string) bool {
 	return false
 }
 
-func (ch *ConfigHandler) SaveConfigMap() error {
+func (ch *Controller) SaveConfigMap() error {
 
 	convToString, err := json.Marshal(ch.CurrentConfig)
 	if err != nil {
@@ -115,7 +115,7 @@ func (ch *ConfigHandler) SaveConfigMap() error {
 	return nil
 }
 
-func (ch *ConfigHandler) LoadConfigMap() error {
+func (ch *Controller) LoadConfigMap() error {
 	cfg, err := ch.KubeHandler.GetConfigMap(ch.configName)
 
 	if err != nil {
@@ -139,7 +139,7 @@ func (ch *ConfigHandler) LoadConfigMap() error {
 	return nil
 }
 
-func (ch *ConfigHandler) GetCurrentConfig() (cmdata *ConfigMapData, err error) {
+func (ch *Controller) GetCurrentConfig() (cmdata *ConfigMapData, err error) {
 	if ch.CurrentConfig != nil {
 		return ch.CurrentConfig, nil
 	} else {
@@ -159,16 +159,16 @@ func (ch *ConfigHandler) GetCurrentConfig() (cmdata *ConfigMapData, err error) {
 
 }
 
-func (ch *ConfigHandler) ValidateParamsAndSubmit(params map[string]string) (wfname string, missingParams []string, err error) {
+func (ch *Controller) ValidateParamsAndSubmit(params map[string]string) (wfname string, missingParams []string, err error) {
 
 	var cTemp Template
 
-	if params["template"] == "" {
-		return "", []string{"template"}, err
+	if params["scheme"] == "" {
+		return "", []string{"scheme"}, err
 	} else {
 
 		for _, tmpl := range ch.CurrentConfig.Templates {
-			if tmpl.Name == params["template"] {
+			if tmpl.Name == params["scheme"] {
 				cTemp = tmpl
 				break
 			}
@@ -219,7 +219,7 @@ Pploop:
 
 }
 
-func (ch *ConfigHandler) BuildYaml(fMappings []FinalMapping, inputYaml string) (outputYaml string) {
+func (ch *Controller) BuildYaml(fMappings []FinalMapping, inputYaml string) (outputYaml string) {
 
 	scanner := bufio.NewScanner(strings.NewReader(inputYaml))
 	linenumber := 0

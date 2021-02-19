@@ -1,0 +1,38 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: splitter-template
+spec:
+  arguments:
+    parameters:
+      - name: DATASOURCE
+        value: ""
+      - name: SPLITPARAMS
+        value: ""
+      - name: IMAGE
+        value: ""
+
+# Workflow template and order
+  templates:
+    - name: splitter
+      inputs:
+        parameters:
+          - name: DATASOURCE
+          - name: SPLITPARAMS
+          - name: IMAGE
+      container:
+        image: "{{inputs.parameters.IMAGE}}"
+        securityContext:
+          runAsUser: 10001
+        resources:
+          limits:
+            memory: "2Gi"
+            cpu: "2000m"
+          requests:
+            memory: "1Gi"
+            cpu: "1000m"
+        env:
+        - name: DATASOURCE
+          value: "{{inputs.parameters.DATASOURCE}}"
+        - name: PARAMS
+          value: "{{inputs.parameters.SPLITPARAMS}}"

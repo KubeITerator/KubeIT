@@ -11,7 +11,7 @@ type Template struct {
 	Name string `json:"name"`
 }
 
-func V1CreateTemplates(cHandler *helpers.ConfigHandler) gin.HandlerFunc {
+func V1CreateScheme(cHandler *helpers.Controller) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
 		temp := Template{}

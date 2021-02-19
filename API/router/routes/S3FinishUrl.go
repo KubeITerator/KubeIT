@@ -6,7 +6,7 @@ import (
 	"kubeIT/helpers"
 )
 
-func S3FinishUpload(cHandler *helpers.ConfigHandler) gin.HandlerFunc {
+func S3FinishUpload(cHandler *helpers.Controller) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
 		passkey := c.Query("key")

@@ -15,7 +15,7 @@ type WFStatus struct {
 	Finished      int    `json:"finished"`
 }
 
-func V1GetStatus(cHandler *helpers.ConfigHandler) gin.HandlerFunc {
+func V1GetStatus(cHandler *helpers.Controller) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
 		var wfStats []WFStatus

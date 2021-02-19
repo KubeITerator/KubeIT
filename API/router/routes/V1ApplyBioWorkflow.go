@@ -6,7 +6,7 @@ import (
 	"kubeIT/helpers"
 )
 
-func V1ApplyWorkflow(cHandler *helpers.ConfigHandler) gin.HandlerFunc {
+func V1ApplyWorkflow(cHandler *helpers.Controller) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
 		parameters := make(map[string]string)

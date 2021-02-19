@@ -1,0 +1,69 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: main-template
+spec:
+  arguments:
+    parameters:
+      - name: INPUTDATA
+        value: ""
+      - name: PCOMMAND
+        value: ""
+      - name: VOLUMENAME
+        value: ""
+      - name: INDEX
+        value: ""
+      - name: HEADER
+        value: ""
+      - name: IMAGE
+        value: ""
+
+# Workflow template and order
+  templates:
+    - name: main
+      inputs:
+        parameters:
+          - name: INPUTDATA
+          - name: COMMAND
+          - name: VOLUMENAME
+          - name: INDEX
+          - name: HEADER
+          - name: IMAGE
+      container:
+        image: "{{inputs.parameters.IMAGE}}"
+        securityContext:
+          runAsUser: 10001
+        resources:
+          limits:
+            memory: "6Gi"
+            cpu: "2000m"
+          requests:
+            memory: "1Gi"
+            cpu: "1000m"
+        command: [sh, -c]
+        args: ["{{inputs.parameters.COMMAND}}{{inputs.parameters.INDEX}}"]
+        volumeMounts:
+        - name: "{{inputs.parameters.VOLUMENAME}}"
+          mountPath: /data/
+        - name: curlinputs
+          mountPath: /inputs/
+      initContainers:
+      - name: init-data
+        image: curlimages/curl:7.73.0
+        securityContext:
+          runAsUser: 10001
+        resources:
+          limits:
+            memory: "2Gi"
+            cpu: "2000m"
+          requests:
+            memory: "1Gi"
+            cpu: "1000m"
+        command: [sh, -c] 
+        args: ["curl {{inputs.parameters.INPUTDATA}} -H '{{inputs.parameters.HEADER}}' -o /inputs/inputfile.faa"]
+        volumeMounts:
+        - name: curlinputs
+          mountPath: /inputs/
+      volumes:
+      - name: curlinputs
+        emptyDir: {}
