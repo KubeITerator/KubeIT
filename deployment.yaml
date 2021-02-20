@@ -73,3 +73,17 @@ spec:
                 optional: false
             - configMapRef:
                 name: kubeit-settings
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: kubeit-service
+spec:
+  selector:
+    app: kubeit
+  ports:
+    - protocol: TCP
+      port: 443
+      targetPort: 9999

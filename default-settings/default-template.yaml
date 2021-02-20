@@ -34,7 +34,7 @@ spec:
       value: |
        {{kubeit.splitter.params}}
     - name: WORKLOADIMAGE
-      value: {{kubeit.workload.command}} # Default: "stanni/alpine-blastp:v0.0.1"
+      value: {{kubeit.workload.image}} # Default: "stanni/alpine-blastp:v0.0.1"
     - name: WORKLOADCOMMAND
       value: {{kubeit.workload.command}} # Default: "blastp -query /inputs/inputfile.faa -db /data/database/db -num_alignments 20000 -comp_based_stats 0 -seg no -outfmt 6 -evalue 1e-05 -out /data/output/output.result"
     - name: COLLECTORIMAGE
