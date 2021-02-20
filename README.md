@@ -60,7 +60,7 @@ Step 5. creates a service with the name `kubeit-service`. Use this service for c
    
 ## Usage
 
-The KubeIT backend is designed to be used via the [KubeIT CLI](). All backend API routes and their functions / interfaces are explained [here](APIDocumentation.md)
+The KubeIT backend is designed to be used via the [KubeIT CLI](). All backend API routes and their functions / interfaces are explained [here](/tree/dev/API/router/APIDocumentation.md)
 
 ### Creating additional WorkflowTemplates:
 
