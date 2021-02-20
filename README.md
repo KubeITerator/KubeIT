@@ -48,9 +48,10 @@ kubectl apply -f confimaps.yaml -n kubeit
 kubectl apply -n kubeit -f https://raw.githubusercontent.com/argoproj/argo-workflows/stable/manifests/install.yaml
 ```
 
-5. Install KubeIT. This yaml contains the KubeIT deployment and the KubeIT service account and service.
+5. Install KubeIT and the default WorkflowTemplates. The first contains the KubeIT deployment and the KubeIT service account and service. The second
 
 ```
+kubectl apply -n kubeit -f https://raw.githubusercontent.com/argoproj/argo-workflows/stable/manifests/install.yaml
 kubectl apply -n kubeit -f https://raw.githubusercontent.com/argoproj/argo-workflows/stable/manifests/install.yaml
 ```
 

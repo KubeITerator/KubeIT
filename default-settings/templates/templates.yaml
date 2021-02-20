@@ -1,0 +1,208 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: init-template
+spec:
+  arguments:
+    parameters:
+      - name: INPUTDATA
+        value: ""
+      - name: COMMAND
+        value: ""
+      - name: VOLUMENAME
+        value: ""
+      - name: IMAGE
+        value: ""
+
+  # Workflow template and order
+  templates:
+    - name: init
+      inputs:
+        parameters:
+          - name: INPUTDATA
+          - name: COMMAND
+          - name: VOLUMENAME
+          - name: IMAGE
+        artifacts:
+          - name: inputfile
+            path: /data/inputfile
+            mode: 0755
+            http:
+              url: "{{inputs.parameters.INPUTDATA}}"
+      container:
+        image: "{{inputs.parameters.IMAGE}}"
+        securityContext:
+          runAsUser: 10001
+        resources:
+          limits:
+            memory: "2Gi"
+            cpu: "2000m"
+          requests:
+            memory: "1Gi"
+            cpu: "1000m"
+        command: [sh, -c]
+        args: ["{{inputs.parameters.COMMAND}}"]
+        volumeMounts:
+          - name: "{{inputs.parameters.VOLUMENAME}}"
+            mountPath: /data/
+
+---
+
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: splitter-template
+spec:
+  arguments:
+    parameters:
+      - name: DATASOURCE
+        value: ""
+      - name: SPLITPARAMS
+        value: ""
+      - name: IMAGE
+        value: ""
+
+  # Workflow template and order
+  templates:
+    - name: splitter
+      inputs:
+        parameters:
+          - name: DATASOURCE
+          - name: SPLITPARAMS
+          - name: IMAGE
+      container:
+        image: "{{inputs.parameters.IMAGE}}"
+        securityContext:
+          runAsUser: 10001
+        resources:
+          limits:
+            memory: "2Gi"
+            cpu: "2000m"
+          requests:
+            memory: "1Gi"
+            cpu: "1000m"
+        env:
+          - name: DATASOURCE
+            value: "{{inputs.parameters.DATASOURCE}}"
+          - name: PARAMS
+            value: "{{inputs.parameters.SPLITPARAMS}}"
+
+---
+
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: main-template
+spec:
+  arguments:
+    parameters:
+      - name: INPUTDATA
+        value: ""
+      - name: PCOMMAND
+        value: ""
+      - name: VOLUMENAME
+        value: ""
+      - name: INDEX
+        value: ""
+      - name: HEADER
+        value: ""
+      - name: IMAGE
+        value: ""
+
+  # Workflow template and order
+  templates:
+    - name: main
+      inputs:
+        parameters:
+          - name: INPUTDATA
+          - name: COMMAND
+          - name: VOLUMENAME
+          - name: INDEX
+          - name: HEADER
+          - name: IMAGE
+      container:
+        image: "{{inputs.parameters.IMAGE}}"
+        securityContext:
+          runAsUser: 10001
+        resources:
+          limits:
+            memory: "6Gi"
+            cpu: "2000m"
+          requests:
+            memory: "1Gi"
+            cpu: "1000m"
+        command: [sh, -c]
+        args: ["{{inputs.parameters.COMMAND}}{{inputs.parameters.INDEX}}"]
+        volumeMounts:
+          - name: "{{inputs.parameters.VOLUMENAME}}"
+            mountPath: /data/
+          - name: curlinputs
+            mountPath: /inputs/
+      initContainers:
+        - name: init-data
+          image: curlimages/curl:7.73.0
+          securityContext:
+            runAsUser: 10001
+          resources:
+            limits:
+              memory: "2Gi"
+              cpu: "2000m"
+            requests:
+              memory: "1Gi"
+              cpu: "1000m"
+          command: [sh, -c]
+          args: ["curl {{inputs.parameters.INPUTDATA}} -H '{{inputs.parameters.HEADER}}' -o /inputs/inputfile.faa"]
+          volumeMounts:
+            - name: curlinputs
+              mountPath: /inputs/
+      volumes:
+        - name: curlinputs
+          emptyDir: {}
+---
+
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: collector-template
+spec:
+  arguments:
+    parameters:
+      - name: COMMAND
+        value: ""
+      - name: VOLUMENAME
+        value: ""
+      - name: IMAGE
+        value: ""
+      - name: RESULTNAME
+        value: ""
+
+  # Workflow template and order
+  templates:
+    - name: collector
+      inputs:
+        parameters:
+          - name: INPUTDATA
+          - name: COMMAND
+          - name: VOLUMENAME
+          - name: IMAGE
+          - name: RESULTNAME
+      container:
+        image: "{{inputs.parameters.IMAGE}}"
+        securityContext:
+          runAsUser: 10001
+        resources:
+          limits:
+            memory: "2Gi"
+            cpu: "2000m"
+          requests:
+            memory: "1Gi"
+            cpu: "1000m"
+        command: [sh, -c]
+        args: ["{{inputs.parameters.COMMAND}}"]
+        volumeMounts:
+          - name: "{{inputs.parameters.VOLUMENAME}}"
+            mountPath: /data/
+        outputs:
+          artifacts:
+            - name: "{{inputs.parameters.RESULTNAME}}"
+              path: /data/output/
