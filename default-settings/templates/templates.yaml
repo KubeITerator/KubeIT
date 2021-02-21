@@ -151,7 +151,7 @@ spec:
               memory: "1Gi"
               cpu: "1000m"
           command: [sh, -c]
-          args: ["curl {{inputs.parameters.INPUTDATA}} -H '{{inputs.parameters.HEADER}}' -o /inputs/inputfile.faa"]
+          args: ["curl '{{inputs.parameters.INPUTDATA}}' -H '{{inputs.parameters.HEADER}}' -o /inputs/inputfile.faa"]
           volumeMounts:
             - name: curlinputs
               mountPath: /inputs/
@@ -181,7 +181,6 @@ spec:
     - name: collector
       inputs:
         parameters:
-          - name: INPUTDATA
           - name: COMMAND
           - name: VOLUMENAME
           - name: IMAGE

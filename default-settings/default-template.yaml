@@ -2,7 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
   generateName: {{kubeit.workflow.nameprefix}} # Default: "kubeit-test"
-  namespace: kubeit
+  namespace: {{kubeit.workflow.namespace}}
   labels:
     project: {{kubeit.project.name}}
 spec:
@@ -90,7 +90,7 @@ spec:
             - name: INPUTDATA
               value: "{{workflow.parameters.INPUTDATA}}"
             - name: COMMAND
-              value: "{{workflow.parameters.WFCOMMAND}}"
+              value: "{{workflow.parameters.WORKLOADCOMMAND}}"
             - name: VOLUMENAME
               value: "{{workflow.parameters.VOLUMENAME}}"
             - name: INDEX
@@ -104,6 +104,8 @@ spec:
             template: collector
           arguments:
             parameters:
+             - name: COMMAND
+               value: "{{workflow.parameters.COLLECTORCOMMAND}}"
              - name: VOLUMENAME
                value: "{{workflow.parameters.VOLUMENAME}}"
              - name: IMAGE

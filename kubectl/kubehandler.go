@@ -2,7 +2,6 @@ package kubectl
 
 import (
 	"bytes"
-	"flag"
 	"fmt"
 	argov1alpha "github.com/argoproj/argo/pkg/apis/workflow/v1alpha1"
 	wfv1 "github.com/argoproj/argo/pkg/client/clientset/versioned/typed/workflow/v1alpha1"
@@ -12,9 +11,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	k8sYaml "k8s.io/apimachinery/pkg/util/yaml"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/clientcmd"
-	"k8s.io/client-go/util/homedir"
-	"path/filepath"
+	"k8s.io/client-go/rest"
 )
 
 type KubeHandler struct {
@@ -24,18 +21,10 @@ type KubeHandler struct {
 }
 
 func (kube *KubeHandler) StartClient(namespace string) {
-	var kubeconfig *string
-	if home := homedir.HomeDir(); home != "" {
-		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
-	} else {
-		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
-	}
-	flag.Parse()
 
-	// use the current context in kubeconfig
-	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
+	config, err := rest.InClusterConfig()
 	if err != nil {
-		panic(err.Error())
+		panic(err)
 	}
 	argoclientset, err := wfv1.NewForConfig(config)
 	kube.k8sclient, err = kubernetes.NewForConfig(config)

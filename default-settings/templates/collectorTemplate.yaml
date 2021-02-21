@@ -19,7 +19,6 @@ spec:
     - name: collector
       inputs:
         parameters:
-          - name: INPUTDATA
           - name: COMMAND
           - name: VOLUMENAME
           - name: IMAGE
@@ -40,7 +39,7 @@ spec:
         volumeMounts:
           - name: "{{inputs.parameters.VOLUMENAME}}"
             mountPath: /data/
-        outputs:
-          artifacts:
-            - name: "{{inputs.parameters.RESULTNAME}}"
-              path: /data/output/
+      outputs:
+        artifacts:
+          - name: "{{inputs.parameters.RESULTNAME}}"
+            path: /data/output/

@@ -49,7 +49,7 @@ func main() {
 	s3.InitS3(s3ip, s3region, basebucket)
 
 	cH := helpers.Controller{}
-	err := cH.Init("kubeit-config", "/kubeIT/default-settings/", &kH, &s3)
+	err := cH.Init("kubeit-config", "/kubeit/default-settings", &kH, &s3)
 
 	if err != nil {
 		fmt.Println(err.Error())

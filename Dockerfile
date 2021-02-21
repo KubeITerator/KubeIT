@@ -18,7 +18,7 @@ RUN adduser \
     --no-create-home \
     --uid "${UID}" \
     "${USER}"
-WORKDIR $GOPATH/src/go/kubeit/
+WORKDIR /kubeit-build/
 COPY . .
 # Get dependencies
 RUN go get -d -v
@@ -32,7 +32,7 @@ COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /etc/passwd /etc/passwd
 COPY --from=builder /etc/group /etc/group
 COPY --from=builder /kubeit/ /kubeit/
-COPY --from=builder $GOPATH/src/go/kubeit/default-settings/ /kubeit/default-settings/
+COPY --from=builder /kubeit-build/default-settings/ /kubeit/default-settings/
 # Run the hello binary.
 USER kubeituser:kubeituser
 ENTRYPOINT ["/kubeit/kubeit.bin"]

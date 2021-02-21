@@ -36,19 +36,19 @@ kubectl create secret generic s3secret --from-literal='AWS_ACCESS_KEY_ID=YOUR-S3
 kubectl create secret generic kubeit-token --from-literal='TOKEN=YOUR-TOKEN' -n kubeit
 ```
 
-3. Pre-configure KubeIT and Argo configmaps. Download the following file [configmaps.yaml]() . Edit both configmap entries to specify your S3 endpoint, S3 Region and the desired S3 Bucket for data storage. Apply the configmap via:
+3. Install Argo. For more information see: [Argo quickstart](https://github.com/argoproj/argo-workflows/blob/master/docs/quick-start.md). Make sure to use the "namspace-install".
+
+```
+kubectl apply -n kubeit -f https://raw.githubusercontent.com/argoproj/argo-workflows/stable/manifests/namespace-install.yaml
+```
+
+4. Pre-configure KubeIT and Argo configmaps. Download the following file [configmaps.yaml](/default-settings/configmaps.yaml) . Edit both configmap entries to specify your S3 endpoint, S3 Region and the desired S3 Bucket for data storage. (Caveat: the first configmap must contain your S3 endpoint without procotol (https://). Apply the configmap via:
 
 ```
 kubectl apply -f confimaps.yaml -n kubeit
 ```
 
-4. Install Argo. For more information see: [Argo quickstart](https://github.com/argoproj/argo-workflows/blob/master/docs/quick-start.md)
-
-```
-kubectl apply -n kubeit -f https://raw.githubusercontent.com/argoproj/argo-workflows/stable/manifests/install.yaml
-```
-
-5. Install KubeIT and the default WorkflowTemplates. The first contains the KubeIT deployment and the KubeIT service account and service. The second
+5. Install KubeIT and the default WorkflowTemplates. The first contains the KubeIT deployment and the KubeIT service account and service. The second contains the WorkflowTemplates for the example usecase.
 
 ```
 kubectl apply -n kubeit -f https://raw.githubusercontent.com/argoproj/argo-workflows/stable/manifests/install.yaml
@@ -60,9 +60,13 @@ Step 5. creates a service with the name `kubeit-service`. Use this service for c
    
 ## Usage
 
-The KubeIT backend is designed to be used via the [KubeIT CLI](). All backend API routes and their functions / interfaces are explained [here](/API/router/APIDocumentation.md)
+The KubeIT backend is designed to be used via the [KubeIT CLI](). If the API is accessed directly see [API Documentation](/API/router/APIDocumentation.md).
 
 ### Creating additional WorkflowTemplates:
+
+A short guideline for the creation of new WorkflowTemplates can be found [here]().
+
+### 
 
 
 
