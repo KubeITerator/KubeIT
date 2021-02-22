@@ -13,9 +13,9 @@ KubeIT uses the cloud native workflow management engine [Argo workflows](https:/
 
 ## Dependencies
 
-- Kubernetes (v)
-- S3 Access Credentials
-- kubectl ()
+- Kubernetes (> v1.19.2)
+- Access to S3 (Credentials with Secret and Access key)
+- kubectl ([install guide](https://kubernetes.io/docs/tasks/tools/install-kubectl/))
 
 ## Installation
 
@@ -60,13 +60,13 @@ Step 5. creates a service with the name `kubeit-service`. Use this service for c
    
 ## Usage
 
-The KubeIT backend is designed to be used via the [KubeIT CLI](). If the API is accessed directly see [API Documentation](/API/router/APIDocumentation.md).
+The KubeIT backend is designed to be used via the [KubeIT CLI](https://github.com/KubeITerator/KubeIT-CLI). If the API is accessed directly see [API Documentation](/API/router/APIDocumentation.md).
 
 ### Creating additional WorkflowTemplates:
 
-A short guideline for the creation of new WorkflowTemplates can be found [here]().
+A short guideline for the creation of new WorkflowTemplates can be found [here](). Guidelines for the creation of new schemes can be found [here]()
 
-### 
+### FAQ
 
 
 
