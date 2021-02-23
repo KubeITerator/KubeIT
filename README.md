@@ -64,7 +64,7 @@ The KubeIT backend is designed to be used via the [KubeIT CLI](https://github.co
 
 ### Creating additional WorkflowTemplates:
 
-A short guideline for the creation of new WorkflowTemplates can be found [here](/default-settings/TEMPLATEDOC.md). Guidelines for the creation of new schemes can be found [here](https://github.com/KubeITerator/KubeIT-CLI/blob/master/docs/GUIDELINES.md)
+A short guideline for the creation of new WorkflowTemplates can be found [here](/default-settings/TEMPLATEDOC.md). Guidelines for the creation of new schemes can be found [here](https://github.com/KubeITerator/KubeIT-CLI/blob/master/docs/GUIDELINES.md). If you want to create your own custom splitting logic you can reference [this](https://github.com/KubeITerator/biosplitter)
 
 ### FAQ
 
