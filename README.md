@@ -51,8 +51,8 @@ kubectl apply -f confimaps.yaml -n kubeit
 5. Install KubeIT and the default WorkflowTemplates. The first contains the KubeIT deployment and the KubeIT service account and service. The second contains the WorkflowTemplates for the example usecase.
 
 ```
-kubectl apply -n kubeit -f https://raw.githubusercontent.com/argoproj/argo-workflows/stable/manifests/install.yaml
-kubectl apply -n kubeit -f https://raw.githubusercontent.com/argoproj/argo-workflows/stable/manifests/install.yaml
+kubectl apply -n kubeit -f https://raw.githubusercontent.com/KubeITerator/KubeIT/master/deployment.yaml
+kubectl apply -n kubeit -f https://raw.githubusercontent.com/KubeITerator/KubeIT/master/default-settings/templates/templates.yaml
 ```
 
 6. Configure ingress for external access: This last step highly depends on your individual network installation (see [here](https://kubernetes.io/docs/concepts/services-networking/ingress/) for mor information). 
@@ -64,7 +64,7 @@ The KubeIT backend is designed to be used via the [KubeIT CLI](https://github.co
 
 ### Creating additional WorkflowTemplates:
 
-A short guideline for the creation of new WorkflowTemplates can be found [here](). Guidelines for the creation of new schemes can be found [here]()
+A short guideline for the creation of new WorkflowTemplates can be found [here](/default-settings/TEMPLATEDOC.md). Guidelines for the creation of new schemes can be found [here](https://github.com/KubeITerator/KubeIT-CLI/blob/master/docs/GUIDELINES.md)
 
 ### FAQ
 
