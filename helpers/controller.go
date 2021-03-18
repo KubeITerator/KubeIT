@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"kubeIT/kubectl"
@@ -127,7 +126,7 @@ func (ch *Controller) LoadConfigMap() error {
 	err = json.Unmarshal([]byte(cfg["data"]), &mapdata)
 
 	if err != nil {
-		fmt.Println("Error in parsing existing config")
+
 		err = ch.CreateNewConfig()
 		if err != nil {
 			return err
@@ -175,7 +174,6 @@ func (ch *Controller) ValidateParamsAndSubmit(params map[string]string) (wfname 
 		}
 
 		if cTemp.Name == "" {
-			fmt.Println("war error")
 			return "", nil, errors.New("unknown template")
 		}
 	}
@@ -208,7 +206,6 @@ Pploop:
 
 	if len(missingParams) == 0 {
 		yaml := ch.BuildYaml(fMappings, cTemp.Yaml)
-		fmt.Println(yaml)
 		wfname, err = ch.KubeHandler.StartWorkflow(yaml)
 		if err != nil {
 			return "", nil, err

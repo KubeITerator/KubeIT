@@ -1,13 +1,26 @@
 package main
 
 import (
-	"fmt"
+	log "github.com/sirupsen/logrus"
 	network "kubeIT/API/router"
 	"kubeIT/helpers"
 	"kubeIT/kubectl"
 	"kubeIT/s3handler"
 	"os"
 )
+
+func init() {
+	log.SetFormatter(&log.JSONFormatter{})
+
+	// LOG Formatting rules:
+	// Levels: Info, Warning, Error
+
+	// log.WithFields(log.Fields{
+	//  "stage": event,
+	//  "topic": topic,
+	//  "key": key,
+	//}).Fatal("Failed to send event")
+}
 
 func main() {
 
@@ -18,28 +31,44 @@ func main() {
 	basebucket := os.Getenv("BASEBUCKET")
 
 	if token == "" {
-		fmt.Println("ERROR: envvar TOKEN must be specified")
-		os.Exit(2)
+
+		log.WithFields(log.Fields{
+			"stage": "INIT",
+			"topic": "envvars",
+			"key":   "TOKEN",
+		}).Fatal("Envvar TOKEN must be specified")
 	}
 
 	if s3ip == "" {
-		fmt.Println("ERROR: envvar S3IP must be specified")
-		os.Exit(2)
+		log.WithFields(log.Fields{
+			"stage": "init",
+			"topic": "envvars",
+			"key":   "S3IP",
+		}).Fatal("Envvar S3IP must be specified")
 	}
 
 	if s3region == "" {
-		fmt.Println("ERROR: envvar S3REGION must be specified")
-		os.Exit(2)
+		log.WithFields(log.Fields{
+			"stage": "init",
+			"topic": "envvars",
+			"key":   "S3REGION",
+		}).Fatal("Envvar S3REGION must be specified")
 	}
 
 	if basebucket == "" {
-		fmt.Println("ERROR: envvar BASEBUCKET must be specified")
-		os.Exit(2)
+		log.WithFields(log.Fields{
+			"stage": "init",
+			"topic": "envvars",
+			"key":   "BASEBUCKET",
+		}).Fatal("Envvar BASEBUCKET must be specified")
 	}
 
 	if namespace == "" {
-		fmt.Println("ERROR: envvar NAMESPACE must be specified")
-		os.Exit(2)
+		log.WithFields(log.Fields{
+			"stage": "init",
+			"topic": "envvars",
+			"key":   "NAMESPACE",
+		}).Fatal("Envvar NAMESPACE must be specified")
 	}
 
 	kH := kubectl.KubeHandler{}
@@ -52,9 +81,11 @@ func main() {
 	err := cH.Init("kubeit-config", "/kubeit/default-settings", &kH, &s3)
 
 	if err != nil {
-		fmt.Println(err.Error())
-		fmt.Println("Error in configHandler init")
-		os.Exit(2)
+		log.WithFields(log.Fields{
+			"stage": "init",
+			"topic": "confighandler",
+			"key":   "confighandler",
+		}).Fatal(err.Error())
 	}
 
 	router := network.Router{}

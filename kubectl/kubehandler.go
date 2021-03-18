@@ -2,9 +2,9 @@ package kubectl
 
 import (
 	"bytes"
-	"fmt"
 	argov1alpha "github.com/argoproj/argo/pkg/apis/workflow/v1alpha1"
 	wfv1 "github.com/argoproj/argo/pkg/client/clientset/versioned/typed/workflow/v1alpha1"
+	log "github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -24,12 +24,20 @@ func (kube *KubeHandler) StartClient(namespace string) {
 
 	config, err := rest.InClusterConfig()
 	if err != nil {
-		panic(err)
+		log.WithFields(log.Fields{
+			"stage": "init",
+			"topic": "kubehandler",
+			"key":   "inclusterconfig",
+		}).Panic(err.Error())
 	}
 	argoclientset, err := wfv1.NewForConfig(config)
 	kube.k8sclient, err = kubernetes.NewForConfig(config)
 	if err != nil {
-		panic(err)
+		log.WithFields(log.Fields{
+			"stage": "init",
+			"topic": "kubehandler",
+			"key":   "create_clientset",
+		}).Panic(err.Error())
 	}
 	kube.argoclient = argoclientset.Workflows(namespace)
 
@@ -76,21 +84,40 @@ func (kube *KubeHandler) StartWorkflow(yaml string) (wfname string, err error) {
 
 	wf, err := kube.ValidateYaml(yaml)
 	if err != nil {
-		fmt.Println("Error in validating Yaml")
-		fmt.Println("Yaml:")
-		fmt.Print(yaml)
+		log.WithFields(log.Fields{
+			"stage":  "kubehandler",
+			"topic":  "start-workflow",
+			"key":    "validate_yaml",
+			"object": wfname,
+		}).Warn(err.Error())
 		return "", err
 	}
 	// Create Deployment
-	fmt.Println("Creating job...")
+	log.WithFields(log.Fields{
+		"stage":  "kubehandler",
+		"topic":  "start-workflow",
+		"key":    "job_creation_init",
+		"object": wfname,
+	}).Debug("Creating job")
+
 	result, err := kube.argoclient.Create(wf)
 	if err != nil {
-		fmt.Println("Error in creating Job")
-		fmt.Println("Yaml:")
-		fmt.Print(yaml)
+		log.WithFields(log.Fields{
+			"stage":  "kubehandler",
+			"topic":  "start-workflow",
+			"key":    "create-job",
+			"object": wfname,
+		}).Warn(err.Error())
 		return "", err
 	}
-	fmt.Printf("Created Job %q.\n", result.GetObjectMeta().GetName())
+
+	log.WithFields(log.Fields{
+		"stage":  "kubehandler",
+		"topic":  "start-workflow",
+		"key":    "job_creation",
+		"object": wfname,
+	}).Debug("Job successful created")
+
 	return result.GetObjectMeta().GetName(), nil
 }
 
