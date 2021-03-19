@@ -1,8 +1,8 @@
 package routes
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
 	"kubeIT/helpers"
 )
 
@@ -11,17 +11,25 @@ func S3FinishUpload(cHandler *helpers.Controller) gin.HandlerFunc {
 
 		passkey := c.Query("key")
 		if passkey == "" {
-			fmt.Println("No Passkey specified")
-			c.AbortWithStatusJSON(400, gin.H{"error": "No Passkey specified"})
+			log.WithFields(log.Fields{
+				"stage": "router",
+				"topic": "s3_finish_upload",
+			}).Warn("No passkey specified")
+			c.AbortWithStatusJSON(400, gin.H{"error": "No passkey specified"})
 			return
 		}
 
 		err := cHandler.S3hander.FinishUpload(passkey)
 
 		if err != nil {
-			fmt.Println("Failed to finish URL")
-			fmt.Println(err.Error())
-			c.AbortWithStatusJSON(400, gin.H{"error": "Failed to finish Upload: " + err.Error()})
+
+			log.WithFields(log.Fields{
+				"stage": "router",
+				"topic": "s3_finish_upload",
+				"type":  "err",
+				"err":   err.Error(),
+			}).Warn("Failed to finish URL upload")
+			c.AbortWithStatusJSON(400, gin.H{"error": "Failed to finish upload: " + err.Error()})
 			return
 		}
 

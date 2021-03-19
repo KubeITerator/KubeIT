@@ -10,6 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 	"os"
 	"time"
@@ -57,7 +58,11 @@ func (api *Api) InitS3(ip, region, basebucket string) {
 }
 func (api *Api) CheckIfExists(key string) (exists bool) {
 
-	fmt.Println("Checking for existence: " + key)
+	log.WithFields(log.Fields{
+		"stage": "s3handler",
+		"topic": "existence_check",
+		"key":   key,
+	}).Info("Checking for existence: " + key)
 
 	input := &s3.HeadObjectInput{
 		Bucket: aws.String(api.BaseBucket),
@@ -90,7 +95,6 @@ func (api *Api) UploadFileToS3(filename string, data []byte) (err error) {
 }
 
 func (api *Api) InitUpload(filename string, multi bool) (passkey string, err error) {
-	fmt.Println(multi)
 
 	passkey = Rand16()
 	key := "/inputdata/" + passkey + "/" + filename
@@ -155,17 +159,29 @@ func (api *Api) GetPresignedURL(passkey string) (url string, err error) {
 			UploadId:   aws.String(part.UploadID),
 		})
 
-		err := req.Send()
+		err = req.Send()
 		if err != nil {
 			if aerr, ok := err.(awserr.Error); ok {
 				switch aerr.Code() {
 				default:
-					fmt.Println(aerr.Error())
+					log.WithFields(log.Fields{
+						"stage": "s3handler",
+						"topic": "get_presigned_url_single",
+						"type":  "aerr",
+						"part":  part,
+						"err":   aerr.Error(),
+					}).Warn("Failed to get presigned SingleURL")
 					return "", aerr
 
 				}
 			} else {
-				fmt.Println(err.Error())
+				log.WithFields(log.Fields{
+					"stage": "s3handler",
+					"topic": "get_presigned_url_single",
+					"type":  "err",
+					"part":  part,
+					"err":   err.Error(),
+				}).Warn("Failed to get presigned SingleURL")
 				return "", err
 			}
 		}
@@ -211,12 +227,24 @@ func (api *Api) GetPresignedURLMulti(key, passkey string) (url string, e error) 
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			default:
-				fmt.Println(aerr.Error())
+				log.WithFields(log.Fields{
+					"stage": "s3handler",
+					"topic": "get_presigned_url_multi",
+					"type":  "aerr",
+					"part":  part,
+					"err":   aerr.Error(),
+				}).Warn("Failed to get presigned MultiURL")
 				return "", aerr
 
 			}
 		} else {
-			fmt.Println(err.Error())
+			log.WithFields(log.Fields{
+				"stage": "s3handler",
+				"topic": "get_presigned_url_multi",
+				"type":  "err",
+				"part":  part,
+				"err":   err.Error(),
+			}).Warn("Failed to get presigned MultiURL")
 			return "", err
 		}
 	}
@@ -242,7 +270,12 @@ func (api *Api) FinishUpload(passkey string) (err error) {
 	parts := api.Multiparts[passkey]
 
 	if parts.Multi {
-		fmt.Println("Completing multipart Upload:")
+		log.WithFields(log.Fields{
+			"stage": "s3handler",
+			"topic": "finish_upload",
+			"phase": "start",
+			"part":  parts,
+		}).Info("Completing multipart Upload")
 		for _, part := range parts.Parts {
 			awsPart := s3.CompletedPart{
 				ETag:       aws.String(part.Etag),
@@ -250,7 +283,13 @@ func (api *Api) FinishUpload(passkey string) (err error) {
 			}
 
 			completedPartsAWS = append(completedPartsAWS, &awsPart)
-			fmt.Println(fmt.Sprintf("Etag: %v, PartNumber:%v", *awsPart.ETag, *awsPart.PartNumber))
+			log.WithFields(log.Fields{
+				"stage":  "s3handler",
+				"topic":  "finish_upload_parts",
+				"part":   parts,
+				"etag":   *awsPart.ETag,
+				"number": *awsPart.PartNumber,
+			}).Debug("Part completion debug information")
 		}
 
 		_, err = api.S3.CompleteMultipartUpload(&s3.CompleteMultipartUploadInput{
@@ -268,7 +307,12 @@ func (api *Api) FinishUpload(passkey string) (err error) {
 
 		time.Sleep(3 * time.Second)
 		if api.CheckIfExists(parts.Key) {
-			fmt.Println("Multipart Upload completed.")
+			log.WithFields(log.Fields{
+				"stage": "s3handler",
+				"topic": "finish_upload",
+				"phase": "end",
+				"part":  parts,
+			}).Info("Multipart Upload completed.")
 			return nil
 		} else {
 			return errors.New("does not exist")
@@ -278,7 +322,12 @@ func (api *Api) FinishUpload(passkey string) (err error) {
 
 		time.Sleep(3 * time.Second)
 		if api.CheckIfExists(parts.Key) {
-			fmt.Println("Upload completed.")
+			log.WithFields(log.Fields{
+				"stage": "s3handler",
+				"topic": "finish_upload",
+				"phase": "end",
+				"part":  parts,
+			}).Info("Upload completed.")
 			return nil
 		} else {
 			return errors.New("does not exist")
@@ -304,11 +353,21 @@ func (api *Api) DownloadFileFromS3(folder, key, path string) error {
 			Key:    aws.String(folder + "/" + key),
 		})
 	if err != nil {
-		fmt.Println("Error while downloading File")
-		fmt.Println(err)
+		log.WithFields(log.Fields{
+			"stage": "s3handler",
+			"topic": "download_file",
+			"type":  "err",
+			"key":   key,
+			"err":   err.Error(),
+		}).Warn("Failed to download file from S3")
 	}
 
-	fmt.Println("Downloaded", file.Name(), numBytes, "bytes")
+	log.WithFields(log.Fields{
+		"stage":    "s3handler",
+		"topic":    "download_file",
+		"filename": file.Name(),
+		"numbytes": numBytes,
+	}).Info("Download successful")
 
 	return err
 }
@@ -370,7 +429,13 @@ func (api *Api) UploadPartInternal(resp *s3.CreateMultipartUploadOutput, fileByt
 				}
 				return nil, err
 			}
-			fmt.Printf("Retrying to upload part #%v\n", partNumber)
+			log.WithFields(log.Fields{
+				"stage":    "s3handler",
+				"topic":    "internal_part_upload",
+				"filename": resp.Key,
+				"partnum":  partNumber,
+				"retries":  tryNum,
+			}).Warn("Retrying to upload part")
 			tryNum++
 		} else {
 			return &s3.CompletedPart{
@@ -395,7 +460,12 @@ func (api *Api) CompleteMultipartUploadInternal(resp *s3.CreateMultipartUploadOu
 }
 
 func (api *Api) AbortMultipartUploadInternal(svc *s3.S3, resp *s3.CreateMultipartUploadOutput) error {
-	fmt.Println("Aborting multipart upload for UploadId#" + *resp.UploadId)
+	log.WithFields(log.Fields{
+		"stage":    "s3handler",
+		"topic":    "abort_multipart",
+		"filename": resp.Key,
+		"uploadid": *resp.UploadId,
+	}).Info("Aborting multipart upload")
 	abortInput := &s3.AbortMultipartUploadInput{
 		Bucket:   resp.Bucket,
 		Key:      resp.Key,

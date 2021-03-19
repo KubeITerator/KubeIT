@@ -1,8 +1,8 @@
 package routes
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
 	"kubeIT/helpers"
 )
 
@@ -11,17 +11,26 @@ func S3GetDownloadURL(cHandler *helpers.Controller) gin.HandlerFunc {
 
 		passkey := c.Query("key")
 		if passkey == "" {
-			fmt.Println("No Passkey specified")
-			c.AbortWithStatusJSON(400, gin.H{"error": "No Passkey specified"})
+			log.WithFields(log.Fields{
+				"stage": "router",
+				"topic": "s3_get_download_url",
+				"type":  "err",
+			}).Warn("No passkey specified")
+			c.AbortWithStatusJSON(400, gin.H{"error": "No passkey specified"})
 			return
 		}
 
 		url, err := cHandler.S3hander.GetPresignedDownloadURL(passkey)
 
 		if err != nil {
-			fmt.Println("Failed to finish URL")
-			fmt.Println(err.Error())
-			c.AbortWithStatusJSON(400, gin.H{"error": "Failed to finish Upload: " + err.Error()})
+
+			log.WithFields(log.Fields{
+				"stage": "router",
+				"topic": "s3_get_download_url",
+				"type":  "err",
+				"err":   err.Error(),
+			}).Warn("Failed to get download URL")
+			c.AbortWithStatusJSON(400, gin.H{"error": "Failed to finish upload: " + err.Error()})
 			return
 		}
 

@@ -129,6 +129,8 @@ func Logger(notLogged ...string) gin.HandlerFunc {
 		}
 
 		entry := log.WithFields(logrus.Fields{
+			"stage":      "router",
+			"topic":      "gin",
 			"statusCode": statusCode,
 			"latency":    latency, // time to process
 			"clientIP":   clientIP,
