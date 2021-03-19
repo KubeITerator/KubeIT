@@ -1,9 +1,9 @@
 package routes
 
 import (
-	"fmt"
 	"github.com/argoproj/argo/pkg/apis/workflow/v1alpha1"
 	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
 	"kubeIT/helpers"
 )
 
@@ -19,11 +19,27 @@ func V1GetResult(cHandler *helpers.Controller) gin.HandlerFunc {
 
 		wf, err := cHandler.KubeHandler.GetWorkflow(workflow)
 
-		if wf == nil || err != nil {
-			fmt.Println("Failed to query workflow: " + workflow)
-			if err != nil {
-				fmt.Println(err.Error())
-			}
+		if wf == nil {
+			log.WithFields(log.Fields{
+				"stage":    "router",
+				"topic":    "get_results",
+				"phase":    "find_workflow",
+				"workflow": workflow,
+				"type":     "missing",
+			}).Warn("No workflow found")
+			c.AbortWithStatusJSON(400, gin.H{"error": "Failed to query workflow: " + workflow})
+			return
+		}
+		if err != nil {
+
+			log.WithFields(log.Fields{
+				"stage":    "router",
+				"topic":    "get_results",
+				"phase":    "find_workflow",
+				"workflow": workflow,
+				"type":     "err",
+				"err":      err.Error(),
+			}).Warn("Failed to query workflow")
 			c.AbortWithStatusJSON(400, gin.H{"error": "Failed to query workflow: " + workflow})
 			return
 		}
@@ -42,8 +58,15 @@ func V1GetResult(cHandler *helpers.Controller) gin.HandlerFunc {
 						if afec.S3.Key != "" {
 							url, err := cHandler.S3hander.GetPresignedDownloadInternal(afec.S3.Key)
 							if err != nil {
-								fmt.Println("Failed to query workflow: " + workflow)
-								fmt.Println(err.Error())
+
+								log.WithFields(log.Fields{
+									"stage":    "router",
+									"topic":    "get_results",
+									"phase":    "get_artifact_url",
+									"workflow": workflow,
+									"type":     "err",
+									"err":      err.Error(),
+								}).Warn("Failed to get workflow-artifact")
 								c.AbortWithStatusJSON(400, gin.H{"error": "Failed to Query S3 Key for workflow: " + workflow})
 								return
 							}

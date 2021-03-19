@@ -1,8 +1,8 @@
 package routes
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
 	"kubeIT/helpers"
 )
 
@@ -17,8 +17,14 @@ func V1DeleteWorkflow(cHandler *helpers.Controller) gin.HandlerFunc {
 			err := cHandler.KubeHandler.DeleteWorkflows(project)
 
 			if err != nil {
-				fmt.Println("Failed to query project: " + project)
-				fmt.Println(err.Error())
+
+				log.WithFields(log.Fields{
+					"stage": "router",
+					"topic": "delete_workflow",
+					"phase": "delete_project",
+					"type":  "err",
+					"err":   err.Error(),
+				}).Warn("Failed to delete project")
 				c.AbortWithStatusJSON(400, gin.H{"error": "Failed to query project: " + project})
 				return
 			}
@@ -27,8 +33,13 @@ func V1DeleteWorkflow(cHandler *helpers.Controller) gin.HandlerFunc {
 			err := cHandler.KubeHandler.DeleteWorkflow(workflow)
 
 			if err != nil {
-				fmt.Println("Failed to query workflow: " + workflow)
-				fmt.Println(err.Error())
+				log.WithFields(log.Fields{
+					"stage": "router",
+					"topic": "delete_workflow",
+					"phase": "delete_workflow",
+					"type":  "err",
+					"err":   err.Error(),
+				}).Warn("Failed to delete workflow")
 				c.AbortWithStatusJSON(400, gin.H{"error": "Failed to query workflow: " + workflow})
 				return
 			}

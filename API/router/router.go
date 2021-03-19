@@ -33,8 +33,13 @@ func (route *Router) Init(xAuthToken string) {
 
 func (route *Router) Run(address string) {
 	err := route.engine.Run(address)
+
 	if err != nil {
-		panic(err)
+		log.WithFields(log.Fields{
+			"stage": "router",
+			"topic": "init",
+			"err":   err.Error(),
+		}).Panic("router.Run failed")
 	}
 }
 

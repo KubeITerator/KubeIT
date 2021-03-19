@@ -1,8 +1,8 @@
 package routes
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
 	"kubeIT/helpers"
 )
 
@@ -18,8 +18,14 @@ func V1CreateScheme(cHandler *helpers.Controller) gin.HandlerFunc {
 		err := c.BindJSON(&temp)
 
 		if err != nil {
-			fmt.Println("Failed to assign template to struct")
-			fmt.Println(err.Error())
+
+			log.WithFields(log.Fields{
+				"stage": "router",
+				"topic": "create_scheme",
+				"phase": "json_binding",
+				"type":  "err",
+				"err":   err.Error(),
+			}).Warn("JSON binding failed")
 			c.AbortWithStatusJSON(400, gin.H{"error": "Failed to assign template to struct: " + err.Error()})
 			return
 		}
@@ -27,8 +33,13 @@ func V1CreateScheme(cHandler *helpers.Controller) gin.HandlerFunc {
 		err = cHandler.AddAditionalTemplate(temp.Name, temp.Yaml)
 
 		if err != nil {
-			fmt.Println("Failed to assign template to struct")
-			fmt.Println(err.Error())
+			log.WithFields(log.Fields{
+				"stage": "router",
+				"topic": "apply_workflow",
+				"phase": "add_scheme",
+				"type":  "err",
+				"err":   err.Error(),
+			}).Warn("Failed to create scheme")
 			c.AbortWithStatusJSON(400, gin.H{"error": "Failed to assign template to struct: " + err.Error()})
 			return
 		}

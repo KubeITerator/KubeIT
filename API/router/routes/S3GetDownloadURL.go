@@ -14,6 +14,7 @@ func S3GetDownloadURL(cHandler *helpers.Controller) gin.HandlerFunc {
 			log.WithFields(log.Fields{
 				"stage": "router",
 				"topic": "s3_get_download_url",
+				"phase": "get_key",
 				"type":  "err",
 			}).Warn("No passkey specified")
 			c.AbortWithStatusJSON(400, gin.H{"error": "No passkey specified"})
@@ -27,6 +28,7 @@ func S3GetDownloadURL(cHandler *helpers.Controller) gin.HandlerFunc {
 			log.WithFields(log.Fields{
 				"stage": "router",
 				"topic": "s3_get_download_url",
+				"phase": "get_download_url",
 				"type":  "err",
 				"err":   err.Error(),
 			}).Warn("Failed to get download URL")

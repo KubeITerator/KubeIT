@@ -18,6 +18,7 @@ func S3GetUploadURL(cHandler *helpers.Controller) gin.HandlerFunc {
 			log.WithFields(log.Fields{
 				"stage": "router",
 				"topic": "s3_get_upload_url",
+				"phase": "get_key",
 				"type":  "err",
 			}).Warn("No passkey specified")
 			c.AbortWithStatusJSON(400, gin.H{"error": "No Passkey specified"})
@@ -30,6 +31,7 @@ func S3GetUploadURL(cHandler *helpers.Controller) gin.HandlerFunc {
 			log.WithFields(log.Fields{
 				"stage": "router",
 				"topic": "s3_get_upload_url",
+				"phase": "get_upload_url",
 				"type":  "err",
 				"err":   err.Error(),
 			}).Warn("Failed to get upload URL")

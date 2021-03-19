@@ -1,8 +1,8 @@
 package routes
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
 	"kubeIT/helpers"
 )
 
@@ -12,8 +12,14 @@ func V1ApplyWorkflow(cHandler *helpers.Controller) gin.HandlerFunc {
 		parameters := make(map[string]string)
 		err := c.BindJSON(&parameters)
 		if err != nil {
-			fmt.Println("CreateTemplate: Unknown JSON, cannot bind request to struct")
-			fmt.Println(err.Error())
+
+			log.WithFields(log.Fields{
+				"stage": "router",
+				"topic": "apply_workflow",
+				"phase": "json_binding",
+				"type":  "err",
+				"err":   err.Error(),
+			}).Warn("JSON binding failed")
 			c.AbortWithStatusJSON(400, gin.H{"error": "Unknown JSON, cannot bind request to struct."})
 			return
 		}
@@ -21,8 +27,13 @@ func V1ApplyWorkflow(cHandler *helpers.Controller) gin.HandlerFunc {
 		wfname, missing, err := cHandler.ValidateParamsAndSubmit(parameters)
 
 		if err != nil {
-			fmt.Println("Failed Template Creation: Unknown Parameters or error")
-			fmt.Println(err.Error())
+			log.WithFields(log.Fields{
+				"stage": "router",
+				"topic": "apply_workflow",
+				"phase": "parm_validation_submit",
+				"type":  "err",
+				"err":   err.Error(),
+			}).Warn("Failed template instantiation: Unknown parameters or error")
 			c.AbortWithStatusJSON(400, gin.H{"error": "Unknown JSON, cannot bind request to struct."})
 			return
 		}

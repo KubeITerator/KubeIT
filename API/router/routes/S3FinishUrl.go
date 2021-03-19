@@ -14,6 +14,8 @@ func S3FinishUpload(cHandler *helpers.Controller) gin.HandlerFunc {
 			log.WithFields(log.Fields{
 				"stage": "router",
 				"topic": "s3_finish_upload",
+				"phase": "get_key",
+				"type":  "err",
 			}).Warn("No passkey specified")
 			c.AbortWithStatusJSON(400, gin.H{"error": "No passkey specified"})
 			return
@@ -26,6 +28,7 @@ func S3FinishUpload(cHandler *helpers.Controller) gin.HandlerFunc {
 			log.WithFields(log.Fields{
 				"stage": "router",
 				"topic": "s3_finish_upload",
+				"phase": "finish_upload",
 				"type":  "err",
 				"err":   err.Error(),
 			}).Warn("Failed to finish URL upload")

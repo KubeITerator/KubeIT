@@ -1,8 +1,8 @@
 package routes
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
 	"kubeIT/helpers"
 )
 
@@ -21,8 +21,13 @@ func S3InitUpload(cHandler *helpers.Controller) gin.HandlerFunc {
 		err := c.BindJSON(&initRequest)
 
 		if err != nil {
-			fmt.Println("Failed assigning to json")
-			fmt.Println(err.Error())
+			log.WithFields(log.Fields{
+				"stage": "router",
+				"topic": "s3_init_upload",
+				"phase": "json_binding",
+				"type":  "err",
+				"err":   err.Error(),
+			}).Warn("JSON binding failed")
 			c.AbortWithStatusJSON(400, gin.H{"error": "Failed to assign Request to struct: " + err.Error()})
 			return
 		}
@@ -30,8 +35,13 @@ func S3InitUpload(cHandler *helpers.Controller) gin.HandlerFunc {
 		passkey, err := cHandler.S3hander.InitUpload(initRequest.Filename, initRequest.Multi)
 
 		if err != nil {
-			fmt.Println("Failed to init S3")
-			fmt.Println(err.Error())
+			log.WithFields(log.Fields{
+				"stage": "router",
+				"topic": "s3_init_upload",
+				"phase": "init_upload",
+				"type":  "err",
+				"err":   err.Error(),
+			}).Warn("S3 init failed")
 			c.AbortWithStatusJSON(400, gin.H{"error": "Failed to init S3: " + err.Error()})
 			return
 		}

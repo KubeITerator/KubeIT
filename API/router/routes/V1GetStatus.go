@@ -1,9 +1,9 @@
 package routes
 
 import (
-	"fmt"
 	"github.com/argoproj/argo/pkg/apis/workflow/v1alpha1"
 	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
 	"kubeIT/helpers"
 )
 
@@ -26,16 +26,30 @@ func V1GetStatus(cHandler *helpers.Controller) gin.HandlerFunc {
 
 			wfs, err := cHandler.KubeHandler.GetWorkflows(project)
 
-			if wfs == nil || err != nil {
-				fmt.Println("Failed to query project: " + project)
-				fmt.Println(err.Error())
+			if wfs == nil || len(wfs.Items) == 0 {
+				log.WithFields(log.Fields{
+					"stage":   "router",
+					"topic":   "get_status",
+					"phase":   "query_project",
+					"project": project,
+					"type":    "missing",
+				}).Warn("No project found")
+
 				c.AbortWithStatusJSON(400, gin.H{"error": "Failed to query project: " + project})
 				return
-			}
 
-			if len(wfs.Items) == 0 {
-				fmt.Println("Failed to query project: " + project)
-				c.AbortWithStatusJSON(400, gin.H{"error": "No workflows found for project: " + project})
+			}
+			if err != nil {
+
+				log.WithFields(log.Fields{
+					"stage":   "router",
+					"topic":   "get_status",
+					"phase":   "query_project",
+					"project": project,
+					"type":    "err",
+					"err":     err.Error(),
+				}).Warn("Failed to query project")
+				c.AbortWithStatusJSON(400, gin.H{"error": "Failed to query project: " + project})
 				return
 			}
 
@@ -65,11 +79,29 @@ func V1GetStatus(cHandler *helpers.Controller) gin.HandlerFunc {
 		} else {
 			wf, err := cHandler.KubeHandler.GetWorkflow(workflow)
 
-			if wf == nil || err != nil {
-				fmt.Println("Failed to query workflow: " + workflow)
-				if err != nil {
-					fmt.Println(err.Error())
-				}
+			if wf == nil {
+				log.WithFields(log.Fields{
+					"stage":    "router",
+					"topic":    "get_status",
+					"phase":    "query_workflow",
+					"workflow": workflow,
+					"type":     "missing",
+				}).Warn("No workflow found")
+
+				c.AbortWithStatusJSON(400, gin.H{"error": "Failed to query workflow: " + workflow})
+				return
+
+			}
+			if err != nil {
+
+				log.WithFields(log.Fields{
+					"stage":    "router",
+					"topic":    "get_status",
+					"phase":    "query_workflow",
+					"workflow": workflow,
+					"type":     "err",
+					"err":      err.Error(),
+				}).Warn("Failed to query workflow")
 				c.AbortWithStatusJSON(400, gin.H{"error": "Failed to query workflow: " + workflow})
 				return
 			}
