@@ -55,7 +55,7 @@ spec:
       serviceAccountName: kubeit-serviceaccount
       containers:
         - name: kubeit
-          image: stanni/kubeit:v0.0.1a
+          image: stanni/kubeit:v0.1.1a
           ports:
             - containerPort: 9999
           envFrom:
