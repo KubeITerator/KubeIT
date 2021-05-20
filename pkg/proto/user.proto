@@ -145,11 +145,12 @@ message TokenStatus {
 
 message User {
   string id = 1 [(tagger.tags) = "bson:\"_id,omitempty\""];
-  string name = 2;
-  string email = 3;
-  bool admin = 4;
-  repeated Token tokens = 5;
-  repeated GroupPermission g_permissions = 6;
+  string sub = 2;
+  string name = 3;
+  string email = 4;
+  bool admin = 5;
+  repeated Token tokens = 6;
+  repeated GroupPermission g_permissions = 7;
 }
 
 message GroupPermission {
