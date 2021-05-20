@@ -2,10 +2,10 @@ syntax = "proto3";
 
 package v1alpha2.user;
 
-option go_package = "github.com/KubeITerator/KubeIT/API/v1alpha2";
+option go_package = "github.com/KubeITerator/KubeIT/API/v1alpha2/user";
 
 import "pkg/dependencies/google/api/annotations.proto";
-import "pkg/proto/common.proto";
+import "pkg/grpc/common/common.proto";
 import "pkg/dependencies/tagger/tagger.proto";
 
 

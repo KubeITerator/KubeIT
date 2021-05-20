@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package v1alpha2.common;
 
-option go_package = "github.com/KubeITerator/KubeIT/API/v1alpha2";
+option go_package = "github.com/KubeITerator/KubeIT/API/v1alpha2/common";
 
 
 enum GrpPermissionLevel {
