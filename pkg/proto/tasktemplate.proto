@@ -3,8 +3,9 @@ syntax = "proto3";
 package v1alpha2.tasktemplate;
 option go_package = "github.com/KubeITerator/KubeIT/API/v1alpha2";
 
-import "dependencies/tagger/tagger.proto";
-import "model/common.proto";
+import "pkg/dependencies/google/api/annotations.proto";
+import "pkg/proto/common.proto";
+import "pkg/dependencies/tagger/tagger.proto";
 
 
 message InputParams {

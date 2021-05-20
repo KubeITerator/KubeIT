@@ -4,9 +4,9 @@ package v1alpha2.user;
 
 option go_package = "github.com/KubeITerator/KubeIT/API/v1alpha2";
 
-import "dependencies/google/API/annotations.proto";
-import "model/common.proto";
-import "dependencies/tagger/tagger.proto";
+import "pkg/dependencies/google/api/annotations.proto";
+import "pkg/proto/common.proto";
+import "pkg/dependencies/tagger/tagger.proto";
 
 
 service ClientTokenService {
