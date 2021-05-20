@@ -3,10 +3,10 @@ package db
 import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"test/test"
+	v1alpha2 "kubeIT/pkg/proto"
 )
 
-func (db *Database) AddSchema(schema *test.Schema) (id primitive.ObjectID, err error) {
+func (db *Database) AddSchema(schema *v1alpha2.Schema) (id primitive.ObjectID, err error) {
 
 	schema.Id = ""
 
@@ -29,8 +29,8 @@ func (db *Database) SchemaExists(schemaid primitive.ObjectID) bool {
 	}
 }
 
-func (db *Database) GetSchema(schemaid primitive.ObjectID) (s *test.Schema, err error) {
-	schema := &test.Schema{}
+func (db *Database) GetSchema(schemaid primitive.ObjectID) (s *v1alpha2.Schema, err error) {
+	schema := &v1alpha2.Schema{}
 	err = db.collections.schema.FindOne(db.ctx, bson.M{"_id": schemaid}).Decode(schema)
 	return schema, err
 }

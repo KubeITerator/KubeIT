@@ -5,10 +5,10 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"test/test"
+	v1alpha2 "kubeIT/pkg/proto"
 )
 
-func (db *Database) AddUser(user *test.User) (id primitive.ObjectID, err error) {
+func (db *Database) AddUser(user *v1alpha2.User) (id primitive.ObjectID, err error) {
 
 	user.Id = ""
 
@@ -31,14 +31,14 @@ func (db *Database) RemoveUser(userid primitive.ObjectID) (int64, error) {
 	}
 }
 
-func (db *Database) GetUserByID(id primitive.ObjectID) (user *test.User, err error) {
-	user = &test.User{}
+func (db *Database) GetUserByID(id primitive.ObjectID) (user *v1alpha2.User, err error) {
+	user = &v1alpha2.User{}
 	err = db.collections.users.FindOne(db.ctx, bson.M{"_id": id}).Decode(user)
 
 	return user, err
 }
 
-func (db *Database) GetTokensByUser(userid primitive.ObjectID) ([]*test.Token, error) {
+func (db *Database) GetTokensByUser(userid primitive.ObjectID) ([]*v1alpha2.Token, error) {
 	user, err := db.GetUserByID(userid)
 	if user != nil {
 		return user.Tokens, err
@@ -48,7 +48,7 @@ func (db *Database) GetTokensByUser(userid primitive.ObjectID) ([]*test.Token, e
 
 }
 
-func (db *Database) AddTokenToUser(token *test.Token, id primitive.ObjectID) error {
+func (db *Database) AddTokenToUser(token *v1alpha2.Token, id primitive.ObjectID) error {
 
 	token.Id = primitive.NewObjectID().Hex()
 	_, err := db.collections.users.UpdateByID(db.ctx, id, bson.M{
@@ -83,9 +83,9 @@ func (db *Database) RemoveTokenFromUser(userid, tokenid primitive.ObjectID) erro
 	return err
 }
 
-func (db *Database) AddUserToGroup(userid, groupid primitive.ObjectID, permlevel test.GrpPermissionLevel) error {
+func (db *Database) AddUserToGroup(userid, groupid primitive.ObjectID, permlevel v1alpha2.GrpPermissionLevel) error {
 
-	perm := test.GroupPermission{
+	perm := v1alpha2.GroupPermission{
 		GroupId:    groupid.Hex(),
 		Permission: permlevel,
 		ProjectIds: []string{},
@@ -113,12 +113,12 @@ func (db *Database) AddUserToGroup(userid, groupid primitive.ObjectID, permlevel
 	callback := func(sessCtx mongo.SessionContext) (interface{}, error) {
 		// Important: You must pass sessCtx as the Context parameter to the operations for them to be executed in the
 		// transaction.
-		//userperm := test.UserPerms{
+		//userperm := v1alpha2.UserPerms{
 		//	UserId:    userid.Hex(),
 		//	PermLevel: perm.Permission,
 		//}
 
-		userperm := test.UserPerms{
+		userperm := v1alpha2.UserPerms{
 			UserId:    userid.Hex(),
 			UserName:  userobj.Name,
 			PermLevel: perm.Permission,
@@ -205,7 +205,7 @@ func (db *Database) RemoveUserFromGroup(userid, groupID primitive.ObjectID) erro
 
 }
 
-func (db *Database) UpdateUserGrpPermLevel(userid, grpid primitive.ObjectID, perm test.GrpPermissionLevel) error {
+func (db *Database) UpdateUserGrpPermLevel(userid, grpid primitive.ObjectID, perm v1alpha2.GrpPermissionLevel) error {
 	callback := func(sessCtx mongo.SessionContext) (interface{}, error) {
 
 		ret, err := db.collections.groups.UpdateOne(db.ctx, bson.M{"_id": grpid, "userperms.userid": userid.Hex()}, bson.M{
@@ -240,7 +240,7 @@ func (db *Database) UpdateUserGrpPermLevel(userid, grpid primitive.ObjectID, per
 
 }
 
-func (db *Database) GetGroupPermissionFromUser(userid, groupid primitive.ObjectID) (*test.GroupPermission, error) {
+func (db *Database) GetGroupPermissionFromUser(userid, groupid primitive.ObjectID) (*v1alpha2.GroupPermission, error) {
 
 	user, err := db.GetUserByID(userid)
 

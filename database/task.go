@@ -3,10 +3,10 @@ package db
 import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"test/test"
+	v1alpha2 "kubeIT/pkg/proto"
 )
 
-func (db *Database) AddTask(task *test.Task) (id primitive.ObjectID, err error) {
+func (db *Database) AddTask(task *v1alpha2.Task) (id primitive.ObjectID, err error) {
 
 	task.Id = ""
 
@@ -29,8 +29,8 @@ func (db *Database) TaskExists(taskid primitive.ObjectID) bool {
 	}
 }
 
-func (db *Database) GetTask(taskid primitive.ObjectID) (t *test.Task, err error) {
-	task := &test.Task{}
+func (db *Database) GetTask(taskid primitive.ObjectID) (t *v1alpha2.Task, err error) {
+	task := &v1alpha2.Task{}
 	err = db.collections.tasks.FindOne(db.ctx, bson.M{"_id": taskid}).Decode(task)
 	return task, err
 }
