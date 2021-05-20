@@ -42,7 +42,7 @@ kubectl create secret generic kubeit-token --from-literal='TOKEN=YOUR-TOKEN' -n 
 kubectl apply -n kubeit -f https://raw.githubusercontent.com/argoproj/argo-workflows/stable/manifests/namespace-install.yaml
 ```
 
-4. Pre-configure KubeIT and Argo configmaps. Download the following file [configmaps.yaml](/default-settings/configmaps.yaml) . Edit both configmap entries to specify your S3 endpoint, S3 Region and the desired S3 Bucket for data storage. (Caveat: the first configmap must contain your S3 endpoint without procotol (https://). Apply the configmap via:
+4. Pre-configure KubeIT and Argo configmaps. Download the following file [configmaps.yaml](/manifests/default-settings/configmaps.yaml) . Edit both configmap entries to specify your S3 endpoint, S3 Region and the desired S3 Bucket for data storage. (Caveat: the first configmap must contain your S3 endpoint without procotol (https://). Apply the configmap via:
 
 ```
 kubectl apply -f confimaps.yaml -n kubeit
@@ -60,11 +60,11 @@ Step 5. creates a service with the name `kubeit-service`. Use this service for c
    
 ## Usage
 
-The KubeIT backend is designed to be used via the [KubeIT CLI](https://github.com/KubeITerator/KubeIT-CLI). If the API is accessed directly see [API Documentation](/API/router/APIDocumentation.md).
+The KubeIT backend is designed to be used via the [KubeIT CLI](https://github.com/KubeITerator/KubeIT-CLI). If the API is accessed directly see [API Documentation](/Server/router/APIDocumentation.md).
 
 ### Creating additional WorkflowTemplates:
 
-A short guideline for the creation of new WorkflowTemplates can be found [here](/default-settings/TEMPLATEDOC.md). Guidelines for the creation of new schemes can be found [here](https://github.com/KubeITerator/KubeIT-CLI/blob/master/docs/GUIDELINES.md). If you want to create your own custom splitting logic you can reference [this](https://github.com/KubeITerator/biosplitter)
+A short guideline for the creation of new WorkflowTemplates can be found [here](/manifests/default-settings/TEMPLATEDOC.md). Guidelines for the creation of new schemes can be found [here](https://github.com/KubeITerator/KubeIT-CLI/blob/master/docs/GUIDELINES.md). If you want to create your own custom splitting logic you can reference [this](https://github.com/KubeITerator/biosplitter)
 
 ### FAQ
 

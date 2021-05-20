@@ -2,10 +2,10 @@ package main
 
 import (
 	log "github.com/sirupsen/logrus"
-	network "kubeIT/API/router"
-	"kubeIT/helpers"
-	"kubeIT/kubectl"
-	"kubeIT/s3handler"
+	helpers2 "kubeIT/server/helpers"
+	kubectl2 "kubeIT/server/kubectl"
+	network "kubeIT/server/router"
+	s3handler2 "kubeIT/server/s3handler"
 	"os"
 )
 
@@ -71,13 +71,13 @@ func main() {
 		}).Fatal("Envvar NAMESPACE must be specified")
 	}
 
-	kH := kubectl.KubeHandler{}
+	kH := kubectl2.KubeHandler{}
 	kH.StartClient(namespace)
 
-	s3 := s3handler.Api{}
+	s3 := s3handler2.Api{}
 	s3.InitS3(s3ip, s3region, basebucket)
 
-	cH := helpers.Controller{}
+	cH := helpers2.Controller{}
 	err := cH.Init("kubeit-config", "/kubeit/default-settings", &kH, &s3)
 
 	if err != nil {

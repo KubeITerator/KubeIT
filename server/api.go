@@ -1,9 +1,11 @@
-package API
+package server
 
 import (
-	kubeitmodel "KubeIT-gRPC/model/grpc"
 	"KubeIT-gRPC/API/gateway"
 	kubeitservice "KubeIT-gRPC/API/grpc"
+	kubeitmodel "KubeIT-gRPC/model/grpc"
+	"context"
+	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"google.golang.org/grpc"
 	"log"
 	"net"
@@ -13,7 +15,7 @@ import (
 type Api struct {
 }
 
-func (api *Api) Init{
+func (api *Api) Init() {
 	ctx := context.Background()
 	// Create a listener on TCP port
 	lis, err := net.Listen("tcp", ":8080")

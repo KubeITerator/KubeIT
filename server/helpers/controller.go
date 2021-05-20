@@ -6,21 +6,21 @@ import (
 	"errors"
 	"io/ioutil"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
-	"kubeIT/kubectl"
-	"kubeIT/s3handler"
+	kubectl2 "kubeIT/server/kubectl"
+	s3handler2 "kubeIT/server/s3handler"
 	"strings"
 )
 
 type Controller struct {
 	configName, defaultPath string
-	KubeHandler             *kubectl.KubeHandler
-	S3hander                *s3handler.Api
+	KubeHandler             *kubectl2.KubeHandler
+	S3hander                *s3handler2.Api
 	yp                      *YamlParser
 	CurrentConfig           *ConfigMapData
 }
 
 // Constructor-ish
-func (ch *Controller) Init(cfname, defaultPath string, handler *kubectl.KubeHandler, s3handler *s3handler.Api) error {
+func (ch *Controller) Init(cfname, defaultPath string, handler *kubectl2.KubeHandler, s3handler *s3handler2.Api) error {
 	ch.S3hander = s3handler
 	ch.configName = cfname
 	ch.defaultPath = defaultPath
