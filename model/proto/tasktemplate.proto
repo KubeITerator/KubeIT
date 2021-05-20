@@ -1,0 +1,90 @@
+syntax = "proto3";
+
+package v1alpha2.tasktemplate;
+option go_package = "github.com/KubeITerator/KubeIT/API/v1alpha2";
+
+import "dependencies/tagger/tagger.proto";
+import "model/common.proto";
+
+
+message InputParams {
+  string name = 1;
+  string value = 2;
+}
+
+message InputArtifacts {
+  string type = 1;
+  string path = 2;
+  string url = 3;
+  string url_header = 4;
+}
+
+message Inputs {
+  repeated InputParams params = 1;
+  repeated InputArtifacts artifacts = 2;
+}
+
+message OutputParams {
+  string name = 1;
+  string param_type = 2;
+  string path = 3;
+  string default = 4;
+}
+
+message OutputArtifact {
+  string name = 1;
+  string path = 2;
+}
+
+message Outputs {
+  repeated OutputParams params = 1;
+  repeated OutputArtifact artifacts = 2;
+}
+
+message Requirement {
+  string memory = 1;
+  string cpu = 2;
+}
+
+message Resources {
+  Requirement limits = 1;
+  Requirement requests = 2;
+}
+
+message VolumeMounts {
+  string name = 1;
+  string mountPath = 2;
+}
+
+message Env {
+  string envType = 1;
+  string key = 2;
+  string name = 3;
+  string nameFrom = 4;
+}
+
+message Container {
+  string name = 1;
+  string image = 2;
+  bool resubmit_pending = 3;
+  Resources resources = 4;
+  uint32 runAsUser = 5;
+  string command = 6;
+  repeated string args = 7;
+  repeated VolumeMounts volume_mounts = 8;
+  repeated Env env = 9;
+}
+
+message Task {
+  string id = 1 [(tagger.tags) = "bson:\"_id,omitempty\""];
+  string name = 2;
+  string short_description = 3;
+  string description = 4;
+  string creator = 5;
+  v1alpha2.common.SharingStatus shared = 6;
+  string yaml = 7;
+  Inputs inputs = 8;
+  Outputs outputs = 9;
+  Container container = 10;
+  Container init_container = 11;
+}

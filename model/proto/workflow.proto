@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package v1alpha2.workflow;
+option go_package = "github.com/KubeITerator/KubeIT/API/v1alpha2";
+
+import "model/schema.proto";
+import "dependencies/tagger/tagger.proto";
+
+
+message Parameter {
+  string name = 1;
+  string value = 2;
+}
+
+message Workflow {
+  string id = 1 [(tagger.tags) = "bson:\"_id,omitempty\""];
+  string name = 2;
+  string template_id = 3;
+  string project = 4;
+  uint32 priority = 5;
+  uint32 limit = 6;
+  string hash = 7;
+  repeated Parameter parameter = 8;
+  repeated v1alpha2.schema.Inputfiles inputfiles = 9;
+  WorkflowStatus status = 10;
+}
+
+message WorkflowStatus {
+  string workflow_id = 1;
+  string project = 2;
+  string status = 3;
+  uint32 pods_total = 4;
+  uint32 pods_finished = 5;
+  uint32 number_of_results = 6;
+}

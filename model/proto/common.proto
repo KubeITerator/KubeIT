@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package v1alpha2.common;
+
+option go_package = "github.com/KubeITerator/KubeIT/API/v1alpha2";
+
+
+enum GrpPermissionLevel {
+  GUEST = 0;
+  USER = 1;
+  CREATOR = 2;
+  GRPADMIN = 3;
+}
+
+enum SharingStatus {
+  PRIVATE = 0;
+  GROUP = 1;
+  ALL = 2;
+}
+
+
+message StatusReport{
+  string action = 1;
+  string message = 2;
+}
+
+message Empty{}

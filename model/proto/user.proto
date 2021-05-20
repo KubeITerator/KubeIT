@@ -1,0 +1,159 @@
+syntax = "proto3";
+
+package v1alpha2.user;
+
+option go_package = "github.com/KubeITerator/KubeIT/API/v1alpha2";
+
+import "dependencies/google/API/annotations.proto";
+import "model/common.proto";
+import "dependencies/tagger/tagger.proto";
+
+
+service ClientTokenService {
+  rpc CreateToken (TokenRequest) returns (Token){
+    option (google.api.http) = {
+      post: "/v1/user/{user_id}/client"
+      body: "*"
+    };
+  };
+
+  rpc GetToken (UserTokenIDRequest) returns (TokenStatus){
+    option (google.api.http) = {
+      post: "/v1/user/{user_id}/client/{token_id}"
+      body: "*"
+    };
+  };
+
+  rpc GetTokenStatusList (UserIDRequest) returns (TokenStatusList){
+    option (google.api.http) = {
+      post: "/v1/user/{user_id}/client/list"
+      body: "*"
+    };
+  };
+
+  rpc DeleteToken (UserTokenIDRequest) returns (v1alpha2.common.StatusReport) {
+    option (google.api.http) = {
+      delete: "/v1/user/{user_id}/client/{token_id}"
+    };
+  };
+}
+
+
+service UserManager {
+  rpc AddUserToGroup (UserGroupRequest) returns (v1alpha2.common.StatusReport){
+    option (google.api.http) = {
+      post: "/v1/admin/group/{group_id}/{user_id}"
+      body: "*"
+    };
+  };
+
+  rpc GetUser (UserIDRequest) returns (User){
+    option (google.api.http) = {
+      get: "/v1/user/{user_id}"
+    };
+  };
+
+  rpc GetUserPermissions (UserIDRequest) returns  (UserPermissionResponse){
+    option (google.api.http) = {
+      get: "/v1/user/{user_id}/perm"
+    };
+
+  };
+
+  rpc ChangeUserPermission (ChangePermissionRequest) returns (v1alpha2.common.StatusReport){
+    option (google.api.http) = {
+      post: "/v1/admin/group/{group_id}"
+      body: "*"
+    };
+  };
+
+  rpc DeleteUser (DeleteUserRequest) returns (v1alpha2.common.StatusReport) {
+    option (google.api.http) = {
+      delete: "/v1/user/{user_id}"
+    };
+
+  };
+
+  rpc RemoveUserFromGroup (UserGroupRequest) returns (v1alpha2.common.StatusReport) {
+    option (google.api.http) = {
+      post: "/v1/admin/group/{group_id}/{user_id}"
+      body: "*"
+    };
+
+  };
+
+}
+
+message UserGroupRequest {
+  string group_id = 1;
+  string user_id = 2;
+}
+
+message UserIDRequest {
+  string user_id = 1;
+}
+
+message ChangePermissionRequest{
+  string group_id = 1;
+  string user_id = 2;
+  v1alpha2.common.GrpPermissionLevel perm_level = 3;
+}
+
+message UserPermissionResponse{
+  string user_id = 1;
+  bool is_admin = 2;
+  repeated GroupPermission g_permissions = 3;
+}
+
+message DeleteUserRequest{
+  string user_id = 1;
+}
+
+message TokenIDRequest{
+    string token_id = 1;
+}
+
+message UserTokenIDRequest{
+  string token_id = 1;
+  string user_id = 2;
+}
+
+message TokenRequest {
+  string user_id = 1;
+  string token_name = 2;
+}
+
+message Token {
+  string id = 1 [(tagger.tags) = "bson:\"_id,omitempty\""];
+  string userid = 2;
+  string name = 3;
+  string token = 4;
+  string last_accessed = 5;
+  string from = 6;
+}
+
+message TokenStatusList{
+  repeated TokenStatus tokens = 1;
+}
+
+message TokenStatus {
+  string id = 1;
+  string name = 2;
+  string last_accessed = 3;
+  string from = 4;
+}
+
+message User {
+  string id = 1 [(tagger.tags) = "bson:\"_id,omitempty\""];
+  string name = 2;
+  string email = 3;
+  bool admin = 4;
+  repeated Token tokens = 5;
+  repeated GroupPermission g_permissions = 6;
+}
+
+message GroupPermission {
+  string group_id = 1;
+  v1alpha2.common.GrpPermissionLevel permission = 2;
+  repeated string project_ids = 3;
+}

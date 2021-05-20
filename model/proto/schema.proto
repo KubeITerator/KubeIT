@@ -1,0 +1,68 @@
+syntax = "proto3";
+
+package v1alpha2.schema;
+
+option go_package = "github.com/KubeITerator/KubeIT/API/v1alpha2";
+
+
+import "dependencies/tagger/tagger.proto";
+import "model/common.proto";
+
+
+
+message Volumes {
+  string volume_name = 1;
+  string size = 2;
+  string storage_class = 3;
+}
+
+message Parameters {
+  string name = 1;
+  string default = 2;
+  bool required = 3;
+}
+
+message Inputfiles {
+  string name = 1;
+  string type = 2;
+}
+
+message Arguments {
+  string name = 1;
+  string value = 2;
+  string type = 3;
+}
+
+message Iterator {
+  string type = 1;
+  string from = 2;
+  string parameters = 3;
+}
+
+message Tasks {
+  string task_reference = 1;
+  string step_name = 2;
+  repeated string dependencies = 3;
+  repeated Arguments arguments = 4;
+  Iterator iterator = 5;
+  string condition = 6;
+}
+
+message Schema {
+  string id = 1 [(tagger.tags) = "bson:\"_id,omitempty\""];
+  string category = 2;
+  string name = 3;
+  string version = 4;
+  uint32 priority = 5;
+  uint32 limit = 6;
+  repeated Volumes volumes = 7;
+  string short_description = 8;
+  string description = 9;
+  string creator = 10;
+  v1alpha2.common.SharingStatus shared = 11;
+  string hash = 12;
+  repeated Parameters parameters = 13;
+  repeated Inputfiles inputfiles = 14;
+  repeated Tasks tasks = 15;
+  string yaml = 16;
+}

@@ -1,0 +1,51 @@
+syntax = "proto3";
+
+package v1alpha2.group;
+
+option go_package = "github.com/KubeITerator/KubeIT/API/v1alpha2";
+
+import "dependencies/google/API/annotations.proto";
+import "model/common.proto";
+import "dependencies/tagger/tagger.proto";
+
+
+service GroupAdminService {
+  rpc CreateGroup (v1alpha2.common.Empty) returns (Group){
+    option (google.api.http) = {
+      post: "/v1/admin/group"
+      body: "*"
+    };
+  };
+
+  rpc DeleteGroup (GroupRequest) returns (v1alpha2.common.StatusReport) {
+    option (google.api.http) = {
+      delete: "/v1/admin/group/{group_id}"
+    };
+  };
+}
+
+message Group {
+  string group_id = 1 [(tagger.tags) = "bson:\"_id,omitempty\""];
+  string name = 2;
+  repeated Project projects = 3;
+  repeated UserPerms user_perms = 4;
+}
+
+message Project {
+  string project_id = 1 [(tagger.tags) = "bson:\"_id,omitempty\""];
+  string name = 2;
+  string description = 3;
+  repeated string user_ids = 4;
+  repeated string workflow_ids = 5;
+}
+
+
+message UserPerms{
+  string user_id = 1;
+  string user_name = 2;
+  v1alpha2.common.GrpPermissionLevel perm_level = 3;
+}
+
+message GroupRequest {
+  string group_id = 1;
+}
