@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package v1alpha2.schema;
 
-option go_package = "github.com/KubeITerator/KubeIT/API/v1alpha2/schema";
+option go_package = "kubeIT/pkg/grpc/schema";
 
 
 import "pkg/dependencies/google/api/annotations.proto";

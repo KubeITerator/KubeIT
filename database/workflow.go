@@ -3,10 +3,10 @@ package db
 import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	v1alpha2 "kubeIT/pkg/proto"
+	"kubeIT/pkg/grpc/workflow"
 )
 
-func (db *Database) AddWorkflow(wf *v1alpha2.Workflow) (id primitive.ObjectID, err error) {
+func (db *Database) AddWorkflow(wf *workflow.Workflow) (id primitive.ObjectID, err error) {
 
 	wf.Id = ""
 
@@ -29,8 +29,8 @@ func (db *Database) WorkflowExists(wfid primitive.ObjectID) bool {
 	}
 }
 
-func (db *Database) GetWorkflow(wfid primitive.ObjectID) (w *v1alpha2.Task, err error) {
-	wf := &v1alpha2.Task{}
+func (db *Database) GetWorkflow(wfid primitive.ObjectID) (w *workflow.Workflow, err error) {
+	wf := &workflow.Workflow{}
 	err = db.collections.workflows.FindOne(db.ctx, bson.M{"_id": wfid}).Decode(wf)
 	return wf, err
 }

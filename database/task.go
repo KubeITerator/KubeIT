@@ -3,14 +3,14 @@ package db
 import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	v1alpha2 "kubeIT/pkg/proto"
+	"kubeIT/pkg/grpc/task"
 )
 
-func (db *Database) AddTask(task *v1alpha2.Task) (id primitive.ObjectID, err error) {
+func (db *Database) AddTask(tsk *task.Task) (id primitive.ObjectID, err error) {
 
-	task.Id = ""
+	tsk.Id = ""
 
-	res, e := db.collections.tasks.InsertOne(db.ctx, task)
+	res, e := db.collections.tasks.InsertOne(db.ctx, tsk)
 
 	if e != nil {
 		return primitive.ObjectID{}, e
@@ -29,10 +29,10 @@ func (db *Database) TaskExists(taskid primitive.ObjectID) bool {
 	}
 }
 
-func (db *Database) GetTask(taskid primitive.ObjectID) (t *v1alpha2.Task, err error) {
-	task := &v1alpha2.Task{}
-	err = db.collections.tasks.FindOne(db.ctx, bson.M{"_id": taskid}).Decode(task)
-	return task, err
+func (db *Database) GetTask(taskid primitive.ObjectID) (t *task.Task, err error) {
+	tsk := &task.Task{}
+	err = db.collections.tasks.FindOne(db.ctx, bson.M{"_id": taskid}).Decode(tsk)
+	return tsk, err
 }
 
 func (db *Database) DeleteTask(taskid primitive.ObjectID) (int64, error) {

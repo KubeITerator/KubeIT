@@ -5,10 +5,10 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	v1alpha2 "kubeIT/pkg/proto"
+	"kubeIT/pkg/grpc/group"
 )
 
-func (db *Database) AddGroup(grp *v1alpha2.Group) (id primitive.ObjectID, err error) {
+func (db *Database) AddGroup(grp *group.Group) (id primitive.ObjectID, err error) {
 	grp.GroupId = ""
 	res, e := db.collections.groups.InsertOne(db.ctx, grp)
 
@@ -30,14 +30,14 @@ func (db *Database) RemoveGroup(grpid primitive.ObjectID) error {
 	return err
 }
 
-func (db *Database) GetGroupByID(grpid primitive.ObjectID) (group *v1alpha2.Group, err error) {
-	group = &v1alpha2.Group{}
-	err = db.collections.groups.FindOne(db.ctx, bson.M{"_id": grpid}).Decode(group)
+func (db *Database) GetGroupByID(grpid primitive.ObjectID) (grp *group.Group, err error) {
+	grp = &group.Group{}
+	err = db.collections.groups.FindOne(db.ctx, bson.M{"_id": grpid}).Decode(grp)
 
-	return group, err
+	return grp, err
 }
 
-func (db *Database) AddProject(project *v1alpha2.Project, groupid, userid primitive.ObjectID) (projectid *primitive.ObjectID, e error) {
+func (db *Database) AddProject(project *group.Project, groupid, userid primitive.ObjectID) (projectid *primitive.ObjectID, e error) {
 	newpid := primitive.NewObjectID()
 
 	project.ProjectId = newpid.Hex()
@@ -76,16 +76,16 @@ func (db *Database) AddProject(project *v1alpha2.Project, groupid, userid primit
 
 }
 
-func (db *Database) GetProjectByID(pid primitive.ObjectID) (proj *v1alpha2.Project, err error) {
-	group := &v1alpha2.Group{}
+func (db *Database) GetProjectByID(pid primitive.ObjectID) (proj *group.Project, err error) {
+	grp := &group.Group{}
 
-	err = db.collections.groups.FindOne(db.ctx, bson.D{{"projects._id", pid.Hex()}}).Decode(group)
+	err = db.collections.groups.FindOne(db.ctx, bson.D{{"projects._id", pid.Hex()}}).Decode(grp)
 
 	if err != nil {
 		return nil, err
 	}
 
-	for _, project := range group.Projects {
+	for _, project := range grp.Projects {
 		if project.ProjectId == pid.Hex() {
 			return project, nil
 		}

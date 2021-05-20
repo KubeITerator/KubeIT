@@ -1,37 +1,38 @@
 package grpc
 
 import (
-	v1alpha2 "KubeIT-gRPC/model/go"
 	"context"
 	"google.golang.org/grpc/metadata"
+	"kubeIT/pkg/grpc/common"
+	"kubeIT/pkg/grpc/user"
 )
 
 type UserManagerServer struct {
-	v1alpha2.UnimplementedUserManagerServer
+	user.UnimplementedUserManagerServer
 }
 
 func NewUserManagerServer() *UserManagerServer {
 	return &UserManagerServer{}
 }
 
-func (a *UserManagerServer) AddUserToGroup(ctx context.Context, request *v1alpha2.UserGroupRequest) (*v1alpha2.StatusReport, error) {
-	md, ok := metadata.FromIncomingContext(ctx)
+func (a *UserManagerServer) AddUserToGroup(ctx context.Context, request *user.UserGroupRequest) (*common.StatusReport, error) {
+	_, _ = metadata.FromIncomingContext(ctx)
 
 	return nil, nil
 
 }
-func (a *UserManagerServer) GetUser(ctx context.Context, request *v1alpha2.UserIDRequest) (*v1alpha2.User, error) {
+func (a *UserManagerServer) GetUser(ctx context.Context, request *user.UserIDRequest) (*user.User, error) {
 	return nil, nil
 }
-func (a *UserManagerServer) GetUserPermissions(ctx context.Context, request *v1alpha2.UserIDRequest) (*v1alpha2.UserPermissionResponse, error) {
+func (a *UserManagerServer) GetUserPermissions(ctx context.Context, request *user.UserIDRequest) (*user.UserPermissionResponse, error) {
 	return nil, nil
 }
-func (a *UserManagerServer) ChangeUserPermission(ctx context.Context, request *v1alpha2.ChangePermissionRequest) (*v1alpha2.StatusReport, error) {
+func (a *UserManagerServer) ChangeUserPermission(ctx context.Context, request *user.ChangePermissionRequest) (*common.StatusReport, error) {
 	return nil, nil
 }
-func (a *UserManagerServer) DeleteUser(ctx context.Context, request *v1alpha2.DeleteUserRequest) (*v1alpha2.StatusReport, error) {
+func (a *UserManagerServer) DeleteUser(ctx context.Context, request *user.DeleteUserRequest) (*common.StatusReport, error) {
 	return nil, nil
 }
-func (a *UserManagerServer) RemoveUserFromGroup(ctx context.Context, request *v1alpha2.UserGroupRequest) (*v1alpha2.StatusReport, error) {
+func (a *UserManagerServer) RemoveUserFromGroup(ctx context.Context, request *user.UserGroupRequest) (*common.StatusReport, error) {
 	return nil, nil
 }

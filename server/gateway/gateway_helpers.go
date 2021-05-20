@@ -1,10 +1,13 @@
 package gateway
 
 import (
+	"context"
 	"crypto/rand"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"github.com/coreos/go-oidc/v3/oidc"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"golang.org/x/oauth2"
 	"io"
 	"log"
@@ -32,20 +35,20 @@ func setCallbackCookie(w http.ResponseWriter, r *http.Request, name, value strin
 	http.SetCookie(w, c)
 }
 
-func HandleAuth(ctx context.Context, gwmux *runtime.ServeMux) {
+func HandleAuth(ctx context.Context, gwmux *runtime.ServeMux, clientid, secret string) {
 
 	provider, err := oidc.NewProvider(ctx, "http://localhost:8090/auth/realms/kubeit-test")
 	if err != nil {
 		log.Fatal(err)
 	}
 	oidcConfig := &oidc.Config{
-		ClientID: clientID,
+		ClientID: clientid,
 	}
 	verifier := provider.Verifier(oidcConfig)
 
 	config := oauth2.Config{
-		ClientID:     clientID,
-		ClientSecret: clientSecret,
+		ClientID:     clientid,
+		ClientSecret: secret,
 		Endpoint:     provider.Endpoint(),
 		RedirectURL:  "http://127.0.0.1:8091/auth/callback",
 		Scopes:       []string{oidc.ScopeOpenID, "profile", "email"},

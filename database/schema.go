@@ -3,10 +3,10 @@ package db
 import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	v1alpha2 "kubeIT/pkg/proto"
+	"kubeIT/pkg/grpc/schema"
 )
 
-func (db *Database) AddSchema(schema *v1alpha2.Schema) (id primitive.ObjectID, err error) {
+func (db *Database) AddSchema(schema *schema.Schema) (id primitive.ObjectID, err error) {
 
 	schema.Id = ""
 
@@ -29,10 +29,10 @@ func (db *Database) SchemaExists(schemaid primitive.ObjectID) bool {
 	}
 }
 
-func (db *Database) GetSchema(schemaid primitive.ObjectID) (s *v1alpha2.Schema, err error) {
-	schema := &v1alpha2.Schema{}
-	err = db.collections.schema.FindOne(db.ctx, bson.M{"_id": schemaid}).Decode(schema)
-	return schema, err
+func (db *Database) GetSchema(schemaid primitive.ObjectID) (s *schema.Schema, err error) {
+	schem := &schema.Schema{}
+	err = db.collections.schema.FindOne(db.ctx, bson.M{"_id": schemaid}).Decode(schem)
+	return schem, err
 }
 
 func (db *Database) DeleteSchema(schemaid primitive.ObjectID) (int64, error) {

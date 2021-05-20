@@ -4,10 +4,10 @@ package user
 
 import (
 	context "context"
-	common "github.com/KubeITerator/KubeIT/API/v1alpha2/common"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	common "kubeIT/pkg/grpc/common"
 )
 
 // This is a compile-time assertion to ensure that this generated file

@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 package v1alpha2.task;
-option go_package = "github.com/KubeITerator/KubeIT/API/v1alpha2/task";
+option go_package = "kubeIT/pkg/grpc/task";
 
 import "pkg/dependencies/google/api/annotations.proto";
 import "pkg/grpc/common/common.proto";

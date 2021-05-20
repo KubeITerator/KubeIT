@@ -1,12 +1,12 @@
 package server
 
 import (
-	"KubeIT-gRPC/API/gateway"
-	kubeitservice "KubeIT-gRPC/API/grpc"
-	kubeitmodel "KubeIT-gRPC/model/grpc"
 	"context"
-	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
+	"kubeIT/pkg/grpc/user"
+	"kubeIT/server/gateway"
+	kubeitgrpc "kubeIT/server/grpc"
 	"log"
 	"net"
 	"net/http"
@@ -25,9 +25,9 @@ func (api *Api) Init() {
 
 	// Create a gRPC server object
 	s := grpc.NewServer()
-	authserver := kubeitservice.NewUserManagerServer()
+	authserver := kubeitgrpc.NewUserManagerServer()
 	// Attach the Greeter API to the server
-	kubeitmodel.RegisterUserManagerServer(s, authserver)
+	user.RegisterUserManagerServer(s, authserver)
 	// Serve gRPC server
 	log.Println("Serving gRPC on 0.0.0.0:8080")
 	go func() {
@@ -48,9 +48,9 @@ func (api *Api) Init() {
 
 	gwmux := runtime.NewServeMux()
 
-	gateway.HandleAuth(ctx, gwmux)
+	gateway.HandleAuth(ctx, gwmux, "", "")
 
-	err = kubeitmodel.RegisterUserManagerHandler(context.Background(), gwmux, conn)
+	err = user.RegisterUserManagerHandler(context.Background(), gwmux, conn)
 	if err != nil {
 		log.Fatalln("Failed to register gateway:", err)
 	}

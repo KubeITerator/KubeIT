@@ -5,14 +5,16 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	v1alpha2 "kubeIT/pkg/proto"
+	"kubeIT/pkg/grpc/common"
+	"kubeIT/pkg/grpc/group"
+	"kubeIT/pkg/grpc/user"
 )
 
-func (db *Database) AddUser(user *v1alpha2.User) (id primitive.ObjectID, err error) {
+func (db *Database) AddUser(u *user.User) (id primitive.ObjectID, err error) {
 
-	user.Id = ""
+	u.Id = ""
 
-	res, e := db.collections.users.InsertOne(db.ctx, user)
+	res, e := db.collections.users.InsertOne(db.ctx, u)
 
 	if e != nil {
 		return primitive.ObjectID{}, e
@@ -31,24 +33,24 @@ func (db *Database) RemoveUser(userid primitive.ObjectID) (int64, error) {
 	}
 }
 
-func (db *Database) GetUserByID(id primitive.ObjectID) (user *v1alpha2.User, err error) {
-	user = &v1alpha2.User{}
-	err = db.collections.users.FindOne(db.ctx, bson.M{"_id": id}).Decode(user)
+func (db *Database) GetUserByID(id primitive.ObjectID) (us *user.User, err error) {
+	u := &user.User{}
+	err = db.collections.users.FindOne(db.ctx, bson.M{"_id": id}).Decode(u)
 
-	return user, err
+	return u, err
 }
 
-func (db *Database) GetTokensByUser(userid primitive.ObjectID) ([]*v1alpha2.Token, error) {
-	user, err := db.GetUserByID(userid)
-	if user != nil {
-		return user.Tokens, err
+func (db *Database) GetTokensByUser(userid primitive.ObjectID) ([]*user.Token, error) {
+	u, err := db.GetUserByID(userid)
+	if u != nil {
+		return u.Tokens, err
 	} else {
 		return nil, err
 	}
 
 }
 
-func (db *Database) AddTokenToUser(token *v1alpha2.Token, id primitive.ObjectID) error {
+func (db *Database) AddTokenToUser(token *user.Token, id primitive.ObjectID) error {
 
 	token.Id = primitive.NewObjectID().Hex()
 	_, err := db.collections.users.UpdateByID(db.ctx, id, bson.M{
@@ -56,13 +58,13 @@ func (db *Database) AddTokenToUser(token *v1alpha2.Token, id primitive.ObjectID)
 	})
 	if err != nil {
 
-		user, err := db.GetUserByID(id)
+		u, err := db.GetUserByID(id)
 
 		if err != nil {
 			return err
 		}
 
-		if user.Tokens == nil {
+		if u.Tokens == nil {
 			_, err = db.collections.users.UpdateByID(db.ctx, id, bson.M{
 				"$set": bson.M{"tokens": bson.A{token}},
 			})
@@ -83,9 +85,9 @@ func (db *Database) RemoveTokenFromUser(userid, tokenid primitive.ObjectID) erro
 	return err
 }
 
-func (db *Database) AddUserToGroup(userid, groupid primitive.ObjectID, permlevel v1alpha2.GrpPermissionLevel) error {
+func (db *Database) AddUserToGroup(userid, groupid primitive.ObjectID, permlevel common.GrpPermissionLevel) error {
 
-	perm := v1alpha2.GroupPermission{
+	perm := &user.GroupPermission{
 		GroupId:    groupid.Hex(),
 		Permission: permlevel,
 		ProjectIds: []string{},
@@ -118,7 +120,7 @@ func (db *Database) AddUserToGroup(userid, groupid primitive.ObjectID, permlevel
 		//	PermLevel: perm.Permission,
 		//}
 
-		userperm := v1alpha2.UserPerms{
+		userperm := &group.UserPerms{
 			UserId:    userid.Hex(),
 			UserName:  userobj.Name,
 			PermLevel: perm.Permission,
@@ -137,13 +139,13 @@ func (db *Database) AddUserToGroup(userid, groupid primitive.ObjectID, permlevel
 		})
 		if err != nil {
 
-			user, err := db.GetUserByID(userid)
+			u, err := db.GetUserByID(userid)
 
 			if err != nil {
 				return nil, err
 			}
 
-			if user.GPermissions == nil {
+			if u.GPermissions == nil {
 				_, err = db.collections.users.UpdateByID(db.ctx, userid, bson.M{
 					"$set": bson.M{"gpermissions": bson.A{perm}},
 				})
@@ -205,7 +207,7 @@ func (db *Database) RemoveUserFromGroup(userid, groupID primitive.ObjectID) erro
 
 }
 
-func (db *Database) UpdateUserGrpPermLevel(userid, grpid primitive.ObjectID, perm v1alpha2.GrpPermissionLevel) error {
+func (db *Database) UpdateUserGrpPermLevel(userid, grpid primitive.ObjectID, perm common.GrpPermissionLevel) error {
 	callback := func(sessCtx mongo.SessionContext) (interface{}, error) {
 
 		ret, err := db.collections.groups.UpdateOne(db.ctx, bson.M{"_id": grpid, "userperms.userid": userid.Hex()}, bson.M{
@@ -240,14 +242,14 @@ func (db *Database) UpdateUserGrpPermLevel(userid, grpid primitive.ObjectID, per
 
 }
 
-func (db *Database) GetGroupPermissionFromUser(userid, groupid primitive.ObjectID) (*v1alpha2.GroupPermission, error) {
+func (db *Database) GetGroupPermissionFromUser(userid, groupid primitive.ObjectID) (*user.GroupPermission, error) {
 
-	user, err := db.GetUserByID(userid)
+	u, err := db.GetUserByID(userid)
 
-	if user == nil {
+	if u == nil {
 		return nil, errors.New("no user found")
 	}
-	for _, perm := range user.GPermissions {
+	for _, perm := range u.GPermissions {
 		if perm.GroupId == groupid.Hex() {
 			return perm, nil
 		}
