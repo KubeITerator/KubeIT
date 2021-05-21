@@ -2,9 +2,8 @@ package main
 
 import (
 	log "github.com/sirupsen/logrus"
-	helpers2 "kubeIT/server/helpers"
+	"kubeIT/server/helpers"
 	kubectl2 "kubeIT/server/kubectl"
-	network "kubeIT/server/router"
 	s3handler2 "kubeIT/server/s3handler"
 	"os"
 )
@@ -77,7 +76,7 @@ func main() {
 	s3 := s3handler2.Api{}
 	s3.InitS3(s3ip, s3region, basebucket)
 
-	cH := helpers2.Controller{}
+	cH := helpers.Controller{}
 	err := cH.Init("kubeit-config", "/kubeit/default-settings", &kH, &s3)
 
 	if err != nil {
@@ -87,9 +86,5 @@ func main() {
 			"key":   "confighandler",
 		}).Fatal(err.Error())
 	}
-
-	router := network.Router{}
-	router.Init(token)
-	router.CreateRoutes(&cH)
 
 }

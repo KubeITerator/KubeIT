@@ -19,6 +19,7 @@ import (
 )
 
 type Gateway struct {
+	gwmux *runtime.ServeMux
 }
 
 func (gw *Gateway) Init() {
@@ -34,18 +35,18 @@ func (gw *Gateway) Init() {
 		log.Fatalln("Failed to dial server:", err)
 	}
 
-	gwmux := runtime.NewServeMux()
+	gw.gwmux = runtime.NewServeMux()
 
-	gw.HandleAuth(context.Background(), gwmux, "", "")
+	gw.HandleAuth(context.Background(), "", "")
 
-	err = user.RegisterUserManagerHandler(context.Background(), gwmux, conn)
+	err = user.RegisterUserManagerHandler(context.Background(), gw.gwmux, conn)
 	if err != nil {
 		log.Fatalln("Failed to register gateway:", err)
 	}
 
 	gwServer := &http.Server{
 		Addr:    ":8091",
-		Handler: gwmux,
+		Handler: gw.gwmux,
 	}
 
 	log.Println("Serving gRPC-Gateway on http://0.0.0.0:8091")
@@ -71,7 +72,7 @@ func (gw *Gateway) setCallbackCookie(w http.ResponseWriter, r *http.Request, nam
 	http.SetCookie(w, c)
 }
 
-func (gw *Gateway) HandleAuth(ctx context.Context, gwmux *runtime.ServeMux, clientid, secret string) {
+func (gw *Gateway) HandleAuth(ctx context.Context, clientid, secret string) {
 
 	provider, err := oidc.NewProvider(ctx, "http://localhost:8090/auth/realms/kubeit-test")
 	if err != nil {
@@ -90,7 +91,7 @@ func (gw *Gateway) HandleAuth(ctx context.Context, gwmux *runtime.ServeMux, clie
 		Scopes:       []string{oidc.ScopeOpenID, "profile", "email"},
 	}
 
-	err = gwmux.HandlePath("GET", "/login", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
+	err = gw.gwmux.HandlePath("GET", "/login", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
 		state, err := gw.randString(16)
 		if err != nil {
 			http.Error(w, "Internal error", http.StatusInternalServerError)
@@ -112,7 +113,7 @@ func (gw *Gateway) HandleAuth(ctx context.Context, gwmux *runtime.ServeMux, clie
 		os.Exit(2)
 	}
 
-	err = gwmux.HandlePath("GET", "/auth/callback", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
+	err = gw.gwmux.HandlePath("GET", "/auth/callback", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
 		state, err := r.Cookie("state")
 
 		fmt.Println(r.Cookies())

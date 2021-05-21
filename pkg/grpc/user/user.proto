@@ -19,15 +19,13 @@ service ClientTokenService {
 
   rpc GetToken (UserTokenIDRequest) returns (TokenStatus){
     option (google.api.http) = {
-      post: "/v1/user/{user_id}/client/{token_id}"
-      body: "*"
+      get: "/v1/user/{user_id}/client/{token_id}"
     };
   };
 
   rpc GetTokenStatusList (UserIDRequest) returns (TokenStatusList){
     option (google.api.http) = {
-      post: "/v1/user/{user_id}/client/list"
-      body: "*"
+      get: "/v1/user/{user_id}/client/list"
     };
   };
 
@@ -42,7 +40,7 @@ service ClientTokenService {
 service UserManager {
   rpc AddUserToGroup (UserGroupRequest) returns (v1alpha2.common.StatusReport){
     option (google.api.http) = {
-      post: "/v1/admin/group/{group_id}/{user_id}"
+      post: "/v1/group/{group_id}/{user_id}"
       body: "*"
     };
   };
@@ -62,7 +60,7 @@ service UserManager {
 
   rpc ChangeUserPermission (ChangePermissionRequest) returns (v1alpha2.common.StatusReport){
     option (google.api.http) = {
-      post: "/v1/admin/group/{group_id}"
+      post: "/v1/group/{group_id}"
       body: "*"
     };
   };
@@ -76,7 +74,7 @@ service UserManager {
 
   rpc RemoveUserFromGroup (UserGroupRequest) returns (v1alpha2.common.StatusReport) {
     option (google.api.http) = {
-      post: "/v1/admin/group/{group_id}/{user_id}"
+      post: "/v1/admin/group/{group_id}"
       body: "*"
     };
 
