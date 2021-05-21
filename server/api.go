@@ -1,22 +1,16 @@
 package server
 
 import (
-	"context"
-	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
 	"kubeIT/pkg/grpc/user"
-	"kubeIT/server/gateway"
 	kubeitgrpc "kubeIT/server/grpc"
 	"log"
 	"net"
-	"net/http"
 )
 
-type Api struct {
-}
+type Api struct{}
 
 func (api *Api) Init() {
-	ctx := context.Background()
 	// Create a listener on TCP port
 	lis, err := net.Listen("tcp", ":8080")
 	if err != nil {
@@ -25,41 +19,13 @@ func (api *Api) Init() {
 
 	// Create a gRPC server object
 	s := grpc.NewServer()
+
 	authserver := kubeitgrpc.NewUserManagerServer()
-	// Attach the Greeter API to the server
+	// Register usermanager
 	user.RegisterUserManagerServer(s, authserver)
 	// Serve gRPC server
 	log.Println("Serving gRPC on 0.0.0.0:8080")
 	go func() {
 		log.Fatalln(s.Serve(lis))
 	}()
-
-	// Create a client connection to the gRPC server we just started
-	// This is where the gRPC-Gateway proxies the requests
-	conn, err := grpc.DialContext(
-		ctx,
-		"0.0.0.0:8080",
-		grpc.WithBlock(),
-		grpc.WithInsecure(),
-	)
-	if err != nil {
-		log.Fatalln("Failed to dial server:", err)
-	}
-
-	gwmux := runtime.NewServeMux()
-
-	gateway.HandleAuth(ctx, gwmux, "", "")
-
-	err = user.RegisterUserManagerHandler(context.Background(), gwmux, conn)
-	if err != nil {
-		log.Fatalln("Failed to register gateway:", err)
-	}
-
-	gwServer := &http.Server{
-		Addr:    ":8091",
-		Handler: gwmux,
-	}
-
-	log.Println("Serving gRPC-Gateway on http://0.0.0.0:8091")
-	log.Fatalln(gwServer.ListenAndServe())
 }

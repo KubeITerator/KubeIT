@@ -9,14 +9,50 @@ import (
 	"github.com/coreos/go-oidc/v3/oidc"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"golang.org/x/oauth2"
+	"google.golang.org/grpc"
 	"io"
+	"kubeIT/pkg/grpc/user"
 	"log"
 	"net/http"
 	"os"
 	"time"
 )
 
-func randString(nByte int) (string, error) {
+type Gateway struct {
+}
+
+func (gw *Gateway) Init() {
+	// Create a client connection to the gRPC server we just started
+	// This is where the gRPC-Gateway proxies the requests
+	conn, err := grpc.DialContext(
+		context.Background(),
+		"0.0.0.0:8080",
+		grpc.WithBlock(),
+		grpc.WithInsecure(),
+	)
+	if err != nil {
+		log.Fatalln("Failed to dial server:", err)
+	}
+
+	gwmux := runtime.NewServeMux()
+
+	gw.HandleAuth(context.Background(), gwmux, "", "")
+
+	err = user.RegisterUserManagerHandler(context.Background(), gwmux, conn)
+	if err != nil {
+		log.Fatalln("Failed to register gateway:", err)
+	}
+
+	gwServer := &http.Server{
+		Addr:    ":8091",
+		Handler: gwmux,
+	}
+
+	log.Println("Serving gRPC-Gateway on http://0.0.0.0:8091")
+	log.Fatalln(gwServer.ListenAndServe())
+}
+
+func (gw *Gateway) randString(nByte int) (string, error) {
 	b := make([]byte, nByte)
 	if _, err := io.ReadFull(rand.Reader, b); err != nil {
 		return "", err
@@ -24,7 +60,7 @@ func randString(nByte int) (string, error) {
 	return base64.RawURLEncoding.EncodeToString(b), nil
 }
 
-func setCallbackCookie(w http.ResponseWriter, r *http.Request, name, value string) {
+func (gw *Gateway) setCallbackCookie(w http.ResponseWriter, r *http.Request, name, value string) {
 	c := &http.Cookie{
 		Name:     name,
 		Value:    value,
@@ -35,7 +71,7 @@ func setCallbackCookie(w http.ResponseWriter, r *http.Request, name, value strin
 	http.SetCookie(w, c)
 }
 
-func HandleAuth(ctx context.Context, gwmux *runtime.ServeMux, clientid, secret string) {
+func (gw *Gateway) HandleAuth(ctx context.Context, gwmux *runtime.ServeMux, clientid, secret string) {
 
 	provider, err := oidc.NewProvider(ctx, "http://localhost:8090/auth/realms/kubeit-test")
 	if err != nil {
@@ -55,18 +91,18 @@ func HandleAuth(ctx context.Context, gwmux *runtime.ServeMux, clientid, secret s
 	}
 
 	err = gwmux.HandlePath("GET", "/login", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
-		state, err := randString(16)
+		state, err := gw.randString(16)
 		if err != nil {
 			http.Error(w, "Internal error", http.StatusInternalServerError)
 			return
 		}
-		nonce, err := randString(16)
+		nonce, err := gw.randString(16)
 		if err != nil {
 			http.Error(w, "Internal error", http.StatusInternalServerError)
 			return
 		}
-		setCallbackCookie(w, r, "state", state)
-		setCallbackCookie(w, r, "nonce", nonce)
+		gw.setCallbackCookie(w, r, "state", state)
+		gw.setCallbackCookie(w, r, "nonce", nonce)
 
 		http.Redirect(w, r, config.AuthCodeURL(state, oidc.Nonce(nonce)), http.StatusFound)
 	})
