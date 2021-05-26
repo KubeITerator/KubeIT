@@ -3,16 +3,18 @@ package grpc
 import (
 	"context"
 	"google.golang.org/grpc/metadata"
+	db "kubeIT/database"
 	"kubeIT/pkg/grpc/common"
 	"kubeIT/pkg/grpc/user"
 )
 
 type UserManagerServer struct {
 	user.UnimplementedUserManagerServer
+	database *db.Database
 }
 
-func NewUserManagerServer() *UserManagerServer {
-	return &UserManagerServer{}
+func NewUserManagerServer(db *db.Database) *UserManagerServer {
+	return &UserManagerServer{database: db}
 }
 
 func (a *UserManagerServer) AddUserToGroup(ctx context.Context, request *user.UserGroupRequest) (*common.StatusReport, error) {

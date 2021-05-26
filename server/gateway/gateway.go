@@ -22,7 +22,13 @@ type Gateway struct {
 	gwmux *runtime.ServeMux
 }
 
-func (gw *Gateway) Init() {
+type TestClaims struct {
+	Sub   string `json:"sub"`
+	Email string `json:"email"`
+	Name  string `json:"name"`
+}
+
+func (gw *Gateway) Init(clientid, secret string) {
 	// Create a client connection to the gRPC server we just started
 	// This is where the gRPC-Gateway proxies the requests
 	conn, err := grpc.DialContext(
@@ -37,7 +43,7 @@ func (gw *Gateway) Init() {
 
 	gw.gwmux = runtime.NewServeMux()
 
-	gw.HandleAuth(context.Background(), "", "")
+	gw.HandleAuth(context.Background(), clientid, secret)
 
 	err = user.RegisterUserManagerHandler(context.Background(), gw.gwmux, conn)
 	if err != nil {
@@ -152,12 +158,10 @@ func (gw *Gateway) HandleAuth(ctx context.Context, clientid, secret string) {
 			return
 		}
 
-		oauth2Token.AccessToken = "*REDACTED*"
-
 		resp := struct {
 			OAuth2Token   *oauth2.Token
-			IDTokenClaims *json.RawMessage // ID Token payload is just JSON.
-		}{oauth2Token, new(json.RawMessage)}
+			IDTokenClaims *TestClaims // ID Token payload is just JSON.
+		}{oauth2Token, &TestClaims{}}
 
 		if err := idToken.Claims(&resp.IDTokenClaims); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)

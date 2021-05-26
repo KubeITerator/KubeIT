@@ -2,6 +2,7 @@ package server
 
 import (
 	"google.golang.org/grpc"
+	db "kubeIT/database"
 	"kubeIT/pkg/grpc/user"
 	kubeitgrpc "kubeIT/server/grpc"
 	"log"
@@ -10,7 +11,7 @@ import (
 
 type Api struct{}
 
-func (api *Api) Init() {
+func (api *Api) Init(db *db.Database) {
 	// Create a listener on TCP port
 	lis, err := net.Listen("tcp", ":8080")
 	if err != nil {
@@ -20,7 +21,7 @@ func (api *Api) Init() {
 	// Create a gRPC server object
 	s := grpc.NewServer()
 
-	authserver := kubeitgrpc.NewUserManagerServer()
+	authserver := kubeitgrpc.NewUserManagerServer(db)
 	// Register usermanager
 	user.RegisterUserManagerServer(s, authserver)
 	// Serve gRPC server
