@@ -109,11 +109,11 @@ func main() {
 
 	database := db.Database{}
 
-	err := database.Init()
-
-	if err != nil {
-
-	}
+	//err := database.Init()
+	//
+	//if err != nil {
+	//
+	//}
 
 	grpc := server.Api{}
 	grpc.Init(&database)

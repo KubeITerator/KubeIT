@@ -19,7 +19,8 @@ import (
 )
 
 type Gateway struct {
-	gwmux *runtime.ServeMux
+	gwmux         *runtime.ServeMux
+	tempkeyaccess map[string]string
 }
 
 type TestClaims struct {
@@ -31,6 +32,8 @@ type TestClaims struct {
 func (gw *Gateway) Init(clientid, secret string) {
 	// Create a client connection to the gRPC server we just started
 	// This is where the gRPC-Gateway proxies the requests
+
+	gw.tempkeyaccess = make(map[string]string)
 	conn, err := grpc.DialContext(
 		context.Background(),
 		"0.0.0.0:8080",
@@ -78,6 +81,16 @@ func (gw *Gateway) setCallbackCookie(w http.ResponseWriter, r *http.Request, nam
 	http.SetCookie(w, c)
 }
 
+func (gw *Gateway) CreateTempKey(refreshToken string) (string, error) {
+
+	rnd, err := gw.randString(10)
+	if err != nil {
+		return "", err
+	}
+	gw.tempkeyaccess[rnd] = refreshToken
+	return rnd, nil
+}
+
 func (gw *Gateway) HandleAuth(ctx context.Context, clientid, secret string) {
 
 	provider, err := oidc.NewProvider(ctx, "http://localhost:8090/auth/realms/kubeit-test")
@@ -112,6 +125,26 @@ func (gw *Gateway) HandleAuth(ctx context.Context, clientid, secret string) {
 		gw.setCallbackCookie(w, r, "nonce", nonce)
 
 		http.Redirect(w, r, config.AuthCodeURL(state, oidc.Nonce(nonce)), http.StatusFound)
+	})
+
+	if err != nil {
+		fmt.Println("Error in gwmux: " + err.Error())
+		os.Exit(2)
+	}
+
+	err = gw.gwmux.HandlePath("GET", "/auth/retrieve", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
+
+		query := r.URL.Query()
+		test := struct {
+			Token string
+		}{gw.tempkeyaccess[query.Get("id")]}
+
+		data, err := json.MarshalIndent(test, "", "    ")
+		if err != nil {
+			fmt.Println("Error in gwmux: " + err.Error())
+			os.Exit(2)
+		}
+		w.Write(data)
 	})
 
 	if err != nil {
@@ -168,15 +201,22 @@ func (gw *Gateway) HandleAuth(ctx context.Context, clientid, secret string) {
 			return
 		}
 
-		data, err := json.MarshalIndent(resp, "", "    ")
+		//data, err := json.MarshalIndent(resp, "", "    ")
+		//if err != nil {
+		//	http.Error(w, err.Error(), http.StatusInternalServerError)
+		//	return
+		//}
+
+		fmt.Println("returned Token")
+
+		key, err := gw.CreateTempKey(resp.OAuth2Token.RefreshToken)
+
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		fmt.Println("returned" + oauth2Token.AccessToken)
-
-		w.Write(data)
+		http.Redirect(w, r, fmt.Sprintf("http://127.0.0.1:3000/callback?id=%s", key), http.StatusFound)
 	})
 
 }
