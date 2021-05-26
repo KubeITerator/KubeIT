@@ -144,6 +144,8 @@ func (gw *Gateway) HandleAuth(ctx context.Context, clientid, secret string) {
 			fmt.Println("Error in gwmux: " + err.Error())
 			os.Exit(2)
 		}
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Content-Type", "application/json")
 		w.Write(data)
 	})
 
