@@ -18,9 +18,14 @@ import (
 	"time"
 )
 
+type TempKey struct {
+	RToken    string
+	ExpiresAt time.Time
+}
+
 type Gateway struct {
 	gwmux         *runtime.ServeMux
-	tempkeyaccess map[string]string
+	tempkeyaccess map[string]TempKey
 }
 
 type TestClaims struct {
@@ -33,7 +38,7 @@ func (gw *Gateway) Init(clientid, secret string) {
 	// Create a client connection to the gRPC server we just started
 	// This is where the gRPC-Gateway proxies the requests
 
-	gw.tempkeyaccess = make(map[string]string)
+	gw.tempkeyaccess = make(map[string]TempKey)
 	conn, err := grpc.DialContext(
 		context.Background(),
 		"0.0.0.0:8080",
@@ -87,7 +92,14 @@ func (gw *Gateway) CreateTempKey(refreshToken string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	gw.tempkeyaccess[rnd] = refreshToken
+
+	// Tempkeys expire after 30 seconds
+	key := TempKey{
+		RToken:    refreshToken,
+		ExpiresAt: time.Now().Add(30 * time.Second),
+	}
+
+	gw.tempkeyaccess[rnd] = key
 	return rnd, nil
 }
 
@@ -135,18 +147,30 @@ func (gw *Gateway) HandleAuth(ctx context.Context, clientid, secret string) {
 	err = gw.gwmux.HandlePath("GET", "/auth/retrieve", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
 
 		query := r.URL.Query()
-		test := struct {
-			Token string
-		}{gw.tempkeyaccess[query.Get("id")]}
 
-		data, err := json.MarshalIndent(test, "", "    ")
-		if err != nil {
-			fmt.Println("Error in gwmux: " + err.Error())
-			os.Exit(2)
+		qid := query.Get("id")
+		temptoken := gw.tempkeyaccess[qid]
+
+		if time.Now().Before(temptoken.ExpiresAt) {
+			rtoken := struct {
+				Token string
+			}{temptoken.RToken}
+
+			data, err := json.MarshalIndent(rtoken, "", "    ")
+			if err != nil {
+				fmt.Println("Error in gwmux: " + err.Error())
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+
+			// TODO: Specify a distinct dns name as origin
+			w.Header().Set("Access-Control-Allow-Origin", "*")
+			w.Header().Set("Content-Type", "application/json")
+			w.Write(data)
+		} else {
+			w.WriteHeader(http.StatusGone)
 		}
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(data)
+		delete(gw.tempkeyaccess, qid)
 	})
 
 	if err != nil {
