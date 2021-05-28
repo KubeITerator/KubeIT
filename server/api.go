@@ -9,7 +9,8 @@ import (
 	"net"
 )
 
-type Api struct{}
+type Api struct {
+}
 
 func (api *Api) Init(db *db.Database) {
 	// Create a listener on TCP port
@@ -20,7 +21,6 @@ func (api *Api) Init(db *db.Database) {
 
 	// Create a gRPC server object
 	s := grpc.NewServer()
-
 	authserver := kubeitgrpc.NewUserManagerServer(db)
 	// Register usermanager
 	user.RegisterUserManagerServer(s, authserver)

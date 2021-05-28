@@ -8,13 +8,13 @@ import (
 	"fmt"
 	"github.com/coreos/go-oidc/v3/oidc"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	log "github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 	"google.golang.org/grpc"
 	"io"
+	db "kubeIT/database"
 	"kubeIT/pkg/grpc/user"
-	"log"
 	"net/http"
-	"os"
 	"time"
 )
 
@@ -26,18 +26,20 @@ type TempKey struct {
 type Gateway struct {
 	gwmux         *runtime.ServeMux
 	tempkeyaccess map[string]TempKey
+	db            *db.Database
 }
 
-type TestClaims struct {
+type Claims struct {
 	Sub   string `json:"sub"`
 	Email string `json:"email"`
 	Name  string `json:"name"`
 }
 
-func (gw *Gateway) Init(clientid, secret string) {
+func (gw *Gateway) Init(clientid, secret string, database *db.Database) {
 	// Create a client connection to the gRPC server we just started
 	// This is where the gRPC-Gateway proxies the requests
 
+	gw.db = database
 	gw.tempkeyaccess = make(map[string]TempKey)
 	conn, err := grpc.DialContext(
 		context.Background(),
@@ -46,16 +48,32 @@ func (gw *Gateway) Init(clientid, secret string) {
 		grpc.WithInsecure(),
 	)
 	if err != nil {
-		log.Fatalln("Failed to dial server:", err)
+		log.WithFields(log.Fields{
+			"stage": "init",
+			"topic": "grpc_gateway",
+			"key":   "dial_grpc",
+		}).Fatal("grpc dial failed: " + err.Error())
 	}
 
 	gw.gwmux = runtime.NewServeMux()
 
-	gw.HandleAuth(context.Background(), clientid, secret)
+	err = gw.HandleAuth(context.Background(), clientid, secret)
+
+	if err != nil {
+		log.WithFields(log.Fields{
+			"stage": "init",
+			"topic": "handle_auth",
+			"key":   "route_setup_failed",
+		}).Fatal("handle auth setup_routes failed: " + err.Error())
+	}
 
 	err = user.RegisterUserManagerHandler(context.Background(), gw.gwmux, conn)
 	if err != nil {
-		log.Fatalln("Failed to register gateway:", err)
+		log.WithFields(log.Fields{
+			"stage": "init",
+			"topic": "register_gateway",
+			"key":   "user_manager_gateway",
+		}).Fatal("Failed to register user manager handler: " + err.Error())
 	}
 
 	gwServer := &http.Server{
@@ -86,11 +104,27 @@ func (gw *Gateway) setCallbackCookie(w http.ResponseWriter, r *http.Request, nam
 	http.SetCookie(w, c)
 }
 
-func (gw *Gateway) CreateTempKey(refreshToken string) (string, error) {
+func (gw *Gateway) CreateTempKey(refreshToken string, claims *Claims) (string, error) {
 
 	rnd, err := gw.randString(10)
 	if err != nil {
 		return "", err
+	}
+
+	if !gw.db.UserExists(claims.Sub) {
+		u := user.User{
+			Id:           "",
+			Sub:          claims.Sub,
+			Name:         claims.Name,
+			Email:        claims.Email,
+			Admin:        false,
+			Tokens:       []*user.Token{},
+			GPermissions: []*user.GroupPermission{},
+		}
+		_, err := gw.db.AddUser(&u)
+		if err != nil {
+			return "", err
+		}
 	}
 
 	// Tempkeys expire after 30 seconds
@@ -103,11 +137,16 @@ func (gw *Gateway) CreateTempKey(refreshToken string) (string, error) {
 	return rnd, nil
 }
 
-func (gw *Gateway) HandleAuth(ctx context.Context, clientid, secret string) {
+func (gw *Gateway) HandleAuth(ctx context.Context, clientid, secret string) error {
 
 	provider, err := oidc.NewProvider(ctx, "http://localhost:8090/auth/realms/kubeit-test")
 	if err != nil {
-		log.Fatal(err)
+		log.WithFields(log.Fields{
+			"stage": "auth",
+			"topic": "handle_auth",
+			"key":   "new_provider",
+		}).Warn("Provider init failed")
+		return err
 	}
 	oidcConfig := &oidc.Config{
 		ClientID: clientid,
@@ -122,14 +161,24 @@ func (gw *Gateway) HandleAuth(ctx context.Context, clientid, secret string) {
 		Scopes:       []string{oidc.ScopeOpenID, "profile", "email"},
 	}
 
-	err = gw.gwmux.HandlePath("GET", "/login", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
+	err = gw.gwmux.HandlePath("GET", "/auth/login", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
 		state, err := gw.randString(16)
 		if err != nil {
+			log.WithFields(log.Fields{
+				"stage": "auth",
+				"topic": "login_route",
+				"key":   "state",
+			}).Warn("Random state creation failed: " + err.Error())
 			http.Error(w, "Internal error", http.StatusInternalServerError)
 			return
 		}
 		nonce, err := gw.randString(16)
 		if err != nil {
+			log.WithFields(log.Fields{
+				"stage": "auth",
+				"topic": "login_route",
+				"key":   "nonce",
+			}).Warn("Random nonce creation failed: " + err.Error())
 			http.Error(w, "Internal error", http.StatusInternalServerError)
 			return
 		}
@@ -140,8 +189,28 @@ func (gw *Gateway) HandleAuth(ctx context.Context, clientid, secret string) {
 	})
 
 	if err != nil {
-		fmt.Println("Error in gwmux: " + err.Error())
-		os.Exit(2)
+		log.WithFields(log.Fields{
+			"stage": "auth",
+			"topic": "login_route",
+			"key":   "gmux_error",
+		}).Warn("Gmux error in handling route: " + err.Error())
+		return err
+	}
+
+	err = gw.gwmux.HandlePath("OPTIONS", "/auth/retrieve", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "POST")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+		return
+	})
+
+	if err != nil {
+		log.WithFields(log.Fields{
+			"stage": "auth",
+			"topic": "auth_retrieve",
+			"key":   "gmux_error_options",
+		}).Warn("Gmux error in handling route: " + err.Error())
+		return err
 	}
 
 	err = gw.gwmux.HandlePath("GET", "/auth/retrieve", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
@@ -158,91 +227,142 @@ func (gw *Gateway) HandleAuth(ctx context.Context, clientid, secret string) {
 
 			data, err := json.MarshalIndent(rtoken, "", "    ")
 			if err != nil {
-				fmt.Println("Error in gwmux: " + err.Error())
-				w.WriteHeader(http.StatusInternalServerError)
+
+				log.WithFields(log.Fields{
+					"stage": "auth",
+					"topic": "auth_retrieve",
+					"key":   "marshal_token",
+				}).Warn("Token marshalling failed: " + err.Error())
+				http.Error(w, "Internal error", http.StatusInternalServerError)
 				return
 			}
 
 			// TODO: Specify a distinct dns name as origin
 			w.Header().Set("Access-Control-Allow-Origin", "*")
 			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
 			w.Write(data)
+			delete(gw.tempkeyaccess, qid)
+			return
 		} else {
+			w.Header().Set("Access-Control-Allow-Origin", "*")
 			w.WriteHeader(http.StatusGone)
+			delete(gw.tempkeyaccess, qid)
+			return
 		}
-		delete(gw.tempkeyaccess, qid)
 	})
 
 	if err != nil {
-		fmt.Println("Error in gwmux: " + err.Error())
-		os.Exit(2)
+		log.WithFields(log.Fields{
+			"stage": "auth",
+			"topic": "auth_retrieve",
+			"key":   "gmux_error_post",
+		}).Warn("Gmux error in handling route: " + err.Error())
+		return err
 	}
 
 	err = gw.gwmux.HandlePath("GET", "/auth/callback", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
+
 		state, err := r.Cookie("state")
 
-		fmt.Println(r.Cookies())
 		if err != nil {
+			log.WithFields(log.Fields{
+				"stage": "auth",
+				"topic": "auth_callback",
+				"key":   "state_not_found",
+			}).Warn("state not found")
 			http.Error(w, "state not found", http.StatusBadRequest)
 			return
 		}
 		if r.URL.Query().Get("state") != state.Value {
+			log.WithFields(log.Fields{
+				"stage": "auth",
+				"topic": "auth_callback",
+				"key":   "state_mismatch",
+			}).Warn("state mismatched")
 			http.Error(w, "state did not match", http.StatusBadRequest)
 			return
 		}
 
 		oauth2Token, err := config.Exchange(ctx, r.URL.Query().Get("code"))
 		if err != nil {
-			http.Error(w, "Failed to exchange token: "+err.Error(), http.StatusInternalServerError)
+			log.WithFields(log.Fields{
+				"stage": "auth",
+				"topic": "auth_callback",
+				"key":   "token_exchange",
+			}).Warn("token exchange failed: " + err.Error())
+			http.Error(w, "Internal error", http.StatusInternalServerError)
 			return
 		}
 		rawIDToken, ok := oauth2Token.Extra("id_token").(string)
 		if !ok {
-			http.Error(w, "No id_token field in oauth2 token.", http.StatusInternalServerError)
+			log.WithFields(log.Fields{
+				"stage": "auth",
+				"topic": "auth_callback",
+				"key":   "id_token_not_found",
+			}).Warn("id token could not be found")
+			http.Error(w, "Internal error", http.StatusInternalServerError)
 			return
 		}
 		idToken, err := verifier.Verify(ctx, rawIDToken)
 		if err != nil {
-			http.Error(w, "Failed to verify ID Token: "+err.Error(), http.StatusInternalServerError)
+			log.WithFields(log.Fields{
+				"stage": "auth",
+				"topic": "auth_callback",
+				"key":   "verify_id_token",
+			}).Warn("failed to verify id_token")
+			http.Error(w, "Internal error", http.StatusInternalServerError)
 			return
 		}
 
 		nonce, err := r.Cookie("nonce")
 		if err != nil {
+			log.WithFields(log.Fields{
+				"stage": "auth",
+				"topic": "auth_callback",
+				"key":   "nonce_not_found",
+			}).Warn("nonce could not be found")
 			http.Error(w, "nonce not found", http.StatusBadRequest)
 			return
 		}
 		if idToken.Nonce != nonce.Value {
+			log.WithFields(log.Fields{
+				"stage": "auth",
+				"topic": "auth_callback",
+				"key":   "nonce_mismatched",
+			}).Warn("nonce could not be matched")
 			http.Error(w, "nonce did not match", http.StatusBadRequest)
 			return
 		}
 
-		resp := struct {
-			OAuth2Token   *oauth2.Token
-			IDTokenClaims *TestClaims // ID Token payload is just JSON.
-		}{oauth2Token, &TestClaims{}}
+		claims := &Claims{}
 
-		if err := idToken.Claims(&resp.IDTokenClaims); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+		if err := idToken.Claims(claims); err != nil {
+			log.WithFields(log.Fields{
+				"stage": "auth",
+				"topic": "auth_callback",
+				"key":   "id_token_match",
+			}).Warn("Id token could not be mapped to claims")
+			http.Error(w, "Internal error", http.StatusInternalServerError)
 			return
 		}
 
-		//data, err := json.MarshalIndent(resp, "", "    ")
-		//if err != nil {
-		//	http.Error(w, err.Error(), http.StatusInternalServerError)
-		//	return
-		//}
-
-		fmt.Println("returned Token")
-
-		key, err := gw.CreateTempKey(resp.OAuth2Token.RefreshToken)
+		key, err := gw.CreateTempKey(oauth2Token.RefreshToken, claims)
 
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+
+			log.WithFields(log.Fields{
+				"stage": "auth",
+				"topic": "auth_callback",
+				"key":   "temp_key_creation_failed",
+			}).Warn("temp key creation failed: " + err.Error())
+			http.Error(w, "Internal error", http.StatusInternalServerError)
 			return
 		}
 
 		http.Redirect(w, r, fmt.Sprintf("http://127.0.0.1:3000/callback?id=%s", key), http.StatusFound)
 	})
+
+	return nil
 
 }

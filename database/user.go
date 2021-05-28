@@ -23,6 +23,16 @@ func (db *Database) AddUser(u *user.User) (id primitive.ObjectID, err error) {
 	return res.InsertedID.(primitive.ObjectID), e
 }
 
+func (db *Database) UserExists(sub string) bool {
+	num, _ := db.collections.users.CountDocuments(db.ctx, bson.D{{"sub", sub}})
+
+	if num > 0 {
+		return true
+	} else {
+		return false
+	}
+}
+
 func (db *Database) RemoveUser(userid primitive.ObjectID) (int64, error) {
 	res, err := db.collections.users.DeleteOne(db.ctx, bson.M{"_id": userid})
 

@@ -2,6 +2,7 @@ package main
 
 import (
 	log "github.com/sirupsen/logrus"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	db "kubeIT/database"
 	"kubeIT/server"
 	"kubeIT/server/gateway"
@@ -107,18 +108,58 @@ func main() {
 		}).Fatal("Envvar OICDSECRET must be specified")
 	}
 
+	mongouser := os.Getenv("MONGODBUSER")
+
+	if mongouser == "" {
+		log.WithFields(log.Fields{
+			"stage": "init",
+			"topic": "envvars",
+			"key":   "MONGODBUSER",
+		}).Fatal("Envvar MONGODBUSER must be specified")
+	}
+
+	mongopw := os.Getenv("MONGODBPW")
+
+	if mongouser == "" {
+		log.WithFields(log.Fields{
+			"stage": "init",
+			"topic": "envvars",
+			"key":   "MONGODBPW",
+		}).Fatal("Envvar MONGODBPW must be specified")
+	}
+
+	mongourl := os.Getenv("MONGODBURL")
+
+	if mongouser == "" {
+		log.WithFields(log.Fields{
+			"stage": "init",
+			"topic": "envvars",
+			"key":   "MONGODBURL",
+		}).Fatal("Envvar MONGODBURL must be specified")
+	}
+
 	database := db.Database{}
 
-	//err := database.Init()
-	//
-	//if err != nil {
-	//
-	//}
+	credential := options.Credential{
+		AuthMechanism: "SCRAM-SHA-1",
+		Username:      mongouser,
+		Password:      mongopw,
+	}
+
+	err := database.Init(credential, mongourl)
+
+	if err != nil {
+		log.WithFields(log.Fields{
+			"stage": "init",
+			"topic": "database",
+			"key":   "Database init",
+		}).Fatal("Database init failed")
+	}
 
 	grpc := server.Api{}
 	grpc.Init(&database)
 
 	grpcgw := gateway.Gateway{}
-	grpcgw.Init(oicdClient, oicdSecret)
+	grpcgw.Init(oicdClient, oicdSecret, &database)
 
 }

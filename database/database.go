@@ -4,7 +4,6 @@ import (
 	"context"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"time"
 )
 
 type Collections struct {
@@ -16,12 +15,11 @@ type Database struct {
 	ctx         context.Context
 	database    *mongo.Database
 	collections Collections
-	cancel      context.CancelFunc
 }
 
 func (db *Database) Init(credential options.Credential, uri string) error {
 
-	db.ctx, db.cancel = context.WithTimeout(context.Background(), 10*time.Second)
+	db.ctx = context.Background()
 	var err error
 	db.client, err = mongo.Connect(db.ctx, options.Client().ApplyURI(uri).SetAuth(credential))
 	if err != nil {
@@ -39,6 +37,5 @@ func (db *Database) Init(credential options.Credential, uri string) error {
 
 func (db *Database) Stop() error {
 	err := db.client.Disconnect(db.ctx)
-	db.cancel()
 	return err
 }
