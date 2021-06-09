@@ -12,7 +12,11 @@ import (
 	"google.golang.org/grpc"
 	"io"
 	db "kubeIT/database"
+	"kubeIT/pkg/grpc/schema"
+	"kubeIT/pkg/grpc/storage"
+	"kubeIT/pkg/grpc/task"
 	"kubeIT/pkg/grpc/user"
+	"kubeIT/pkg/grpc/workflow"
 	"kubeIT/server/helpers"
 	"net/http"
 	"time"
@@ -68,6 +72,42 @@ func (gw *Gateway) Init(database *db.Database, authorizer *helpers.Authorizer) {
 			"topic": "register_gateway",
 			"key":   "user_manager_gateway",
 		}).Fatal("Failed to register user manager handler: " + err.Error())
+	}
+
+	err = task.RegisterTaskManagementServiceHandler(context.Background(), gw.gwmux, conn)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"stage": "init",
+			"topic": "register_gateway",
+			"key":   "task_manager_gateway",
+		}).Fatal("Failed to register task manager handler: " + err.Error())
+	}
+
+	err = schema.RegisterSchemaManagementServiceHandler(context.Background(), gw.gwmux, conn)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"stage": "init",
+			"topic": "register_gateway",
+			"key":   "schema_manager_gateway",
+		}).Fatal("Failed to register schema manager handler: " + err.Error())
+	}
+
+	err = workflow.RegisterWorkflowManagementServiceHandler(context.Background(), gw.gwmux, conn)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"stage": "init",
+			"topic": "register_gateway",
+			"key":   "workflow_manager_gateway",
+		}).Fatal("Failed to register workflow manager handler: " + err.Error())
+	}
+
+	err = storage.RegisterStorageManagementServiceHandler(context.Background(), gw.gwmux, conn)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"stage": "init",
+			"topic": "register_gateway",
+			"key":   "storage_manager_gateway",
+		}).Fatal("Failed to register storage manager handler: " + err.Error())
 	}
 
 	gwServer := &http.Server{
