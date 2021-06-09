@@ -7,7 +7,7 @@ import (
 )
 
 type Collections struct {
-	users, groups, schema, tasks, workflows *mongo.Collection
+	users, groups, schema, tasks, workflows, storage *mongo.Collection
 }
 
 type Database struct {
@@ -32,6 +32,7 @@ func (db *Database) Init(credential options.Credential, uri string) error {
 	db.collections.schema = db.database.Collection("schema")
 	db.collections.tasks = db.database.Collection("tasks")
 	db.collections.workflows = db.database.Collection("workflows")
+	db.collections.storage = db.database.Collection("storage")
 	return err
 }
 

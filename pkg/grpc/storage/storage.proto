@@ -61,7 +61,7 @@ message File {
   string id = 1 [(tagger.tags) = "bson:\"_id,omitempty\""];
   string user_id = 2;
   string name = 3;
-  StorageType storage_type = 4;
+  StorageInfo storage_info = 4;
   string location = 5;
   Status status = 6;
 }
@@ -70,6 +70,20 @@ enum Status {
   INIT = 0;
   AVAILABLE = 1;
   ERROR = 2;
+}
+
+message S3Info{
+  bool multi = 1;
+  int32 part = 2;
+  string bucket = 3;
+  string key = 4;
+}
+
+message StorageInfo{
+  StorageType storage_type = 1;
+  oneof type_info{
+    S3Info s3info = 2;
+  }
 }
 
 
