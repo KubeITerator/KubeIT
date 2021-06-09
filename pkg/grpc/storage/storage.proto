@@ -1,0 +1,80 @@
+syntax = "proto3";
+
+package v1alpha2.storage;
+option go_package = "kubeIT/pkg/grpc/storage";
+
+import "pkg/dependencies/google/api/annotations.proto";
+import "pkg/grpc/common/common.proto";
+import "pkg/dependencies/tagger/tagger.proto";
+
+service StorageManagementService {
+  rpc InitUpload (InitRequest) returns (IDmessage){
+    option (google.api.http) = {
+      post: "/v1/upload"
+      body: "*"
+    };
+  };
+
+  rpc GetUploadUrl(IDmessage) returns (UrlResponse){
+    option (google.api.http) = {
+      post: "/v1/upload/{transfer_id}"
+    };
+  }
+
+
+  rpc FinishUpload (IDmessage) returns (v1alpha2.common.StatusReport){
+    option (google.api.http) = {
+      post: "/v1/upload/{transfer_id}"
+    };
+  };
+
+  rpc DeleteUpload (IDmessage) returns (v1alpha2.common.StatusReport) {
+    option (google.api.http) = {
+      post: "/v1/upload/{transfer_id}"
+    };
+  };
+
+  rpc GetDownload (IDmessage) returns (UrlResponse) {
+    option (google.api.http) = {
+      get: "/v1/upload/{transfer_id}"
+    };
+  }
+}
+
+message InitRequest {
+  string userid = 1;
+  string filename = 2;
+  bool multipart = 3;
+}
+
+message UrlResponse {
+  string transfer_id = 1;
+  string url = 2;
+}
+
+message IDmessage {
+  string transfer_id = 1;
+}
+
+
+message File {
+  string id = 1 [(tagger.tags) = "bson:\"_id,omitempty\""];
+  string user_id = 2;
+  string name = 3;
+  StorageType storage_type = 4;
+  string location = 5;
+  Status status = 6;
+}
+
+enum Status {
+  INIT = 0;
+  AVAILABLE = 1;
+  ERROR = 2;
+}
+
+
+enum StorageType {
+  S3 = 0;
+  VOLUME = 1;
+  CORE = 2;
+}
