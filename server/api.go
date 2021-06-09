@@ -4,6 +4,7 @@ import (
 	"google.golang.org/grpc"
 	db "kubeIT/database"
 	"kubeIT/pkg/grpc/schema"
+	"kubeIT/pkg/grpc/storage"
 	"kubeIT/pkg/grpc/task"
 	"kubeIT/pkg/grpc/user"
 	"kubeIT/pkg/grpc/workflow"
@@ -29,12 +30,14 @@ func (api *Api) Init(db *db.Database, authorizer *helpers.Authorizer) {
 	taskserver := kubeitgrpc.NewTaskManagementService(db, authorizer)
 	schemaserver := kubeitgrpc.NewSchemaManagementService(db, authorizer)
 	workflowserver := kubeitgrpc.NewWorkflowManagementService(db, authorizer)
+	storageserver := kubeitgrpc.NewStorageService(db, authorizer)
 
 	// Register managers
 	user.RegisterUserManagerServer(s, authserver)
 	task.RegisterTaskManagementServiceServer(s, taskserver)
 	schema.RegisterSchemaManagementServiceServer(s, schemaserver)
 	workflow.RegisterWorkflowManagementServiceServer(s, workflowserver)
+	storage.RegisterStorageManagementServiceServer(s, storageserver)
 
 	// Serve gRPC server
 	log.Println("Serving gRPC on 0.0.0.0:8080")
