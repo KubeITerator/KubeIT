@@ -10,6 +10,7 @@ import (
 	"kubeIT/pkg/grpc/workflow"
 	kubeitgrpc "kubeIT/server/grpc"
 	"kubeIT/server/helpers"
+	"kubeIT/server/s3handler"
 	"log"
 	"net"
 )
@@ -17,7 +18,7 @@ import (
 type Api struct {
 }
 
-func (api *Api) Init(db *db.Database, authorizer *helpers.Authorizer) {
+func (api *Api) Init(db *db.Database, authorizer *helpers.Authorizer, s3handler *s3handler.Api) {
 	// Create a listener on TCP port
 	lis, err := net.Listen("tcp", ":8080")
 	if err != nil {
@@ -30,7 +31,7 @@ func (api *Api) Init(db *db.Database, authorizer *helpers.Authorizer) {
 	taskserver := kubeitgrpc.NewTaskManagementService(db, authorizer)
 	schemaserver := kubeitgrpc.NewSchemaManagementService(db, authorizer)
 	workflowserver := kubeitgrpc.NewWorkflowManagementService(db, authorizer)
-	storageserver := kubeitgrpc.NewStorageService(db, authorizer)
+	storageserver := kubeitgrpc.NewStorageService(db, authorizer, s3handler)
 
 	// Register managers
 	user.RegisterUserManagerServer(s, authserver)

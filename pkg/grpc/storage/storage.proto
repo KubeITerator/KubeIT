@@ -44,7 +44,7 @@ service StorageManagementService {
 message InitRequest {
   string userid = 1;
   string filename = 2;
-  bool multipart = 3;
+  StorageInfo storage_info = 3;
 }
 
 message UrlResponse {

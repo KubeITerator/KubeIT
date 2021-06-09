@@ -7,6 +7,8 @@ import (
 	"kubeIT/server"
 	"kubeIT/server/gateway"
 	"kubeIT/server/helpers"
+	"kubeIT/server/kubectl"
+	"kubeIT/server/s3handler"
 	"os"
 )
 
@@ -26,10 +28,10 @@ func init() {
 func main() {
 
 	//token := os.Getenv("TOKEN")
-	//s3ip := os.Getenv("S3IP")
-	//s3region := os.Getenv("S3REGION")
-	//namespace := os.Getenv("NAMESPACE")
-	//basebucket := os.Getenv("BASEBUCKET")
+	s3ip := os.Getenv("S3IP")
+	s3region := os.Getenv("S3REGION")
+	namespace := os.Getenv("NAMESPACE")
+	basebucket := os.Getenv("BASEBUCKET")
 	//
 	//if token == "" {
 	//
@@ -40,43 +42,43 @@ func main() {
 	//	}).Fatal("Envvar TOKEN must be specified")
 	//}
 	//
-	//if s3ip == "" {
-	//	log.WithFields(log.Fields{
-	//		"stage": "init",
-	//		"topic": "envvars",
-	//		"key":   "S3IP",
-	//	}).Fatal("Envvar S3IP must be specified")
-	//}
+	if s3ip == "" {
+		log.WithFields(log.Fields{
+			"stage": "init",
+			"topic": "envvars",
+			"key":   "S3IP",
+		}).Fatal("Envvar S3IP must be specified")
+	}
+
+	if s3region == "" {
+		log.WithFields(log.Fields{
+			"stage": "init",
+			"topic": "envvars",
+			"key":   "S3REGION",
+		}).Fatal("Envvar S3REGION must be specified")
+	}
+
+	if basebucket == "" {
+		log.WithFields(log.Fields{
+			"stage": "init",
+			"topic": "envvars",
+			"key":   "BASEBUCKET",
+		}).Fatal("Envvar BASEBUCKET must be specified")
+	}
 	//
-	//if s3region == "" {
-	//	log.WithFields(log.Fields{
-	//		"stage": "init",
-	//		"topic": "envvars",
-	//		"key":   "S3REGION",
-	//	}).Fatal("Envvar S3REGION must be specified")
-	//}
+	if namespace == "" {
+		log.WithFields(log.Fields{
+			"stage": "init",
+			"topic": "envvars",
+			"key":   "NAMESPACE",
+		}).Fatal("Envvar NAMESPACE must be specified")
+	}
 	//
-	//if basebucket == "" {
-	//	log.WithFields(log.Fields{
-	//		"stage": "init",
-	//		"topic": "envvars",
-	//		"key":   "BASEBUCKET",
-	//	}).Fatal("Envvar BASEBUCKET must be specified")
-	//}
+	kH := kubectl.KubeHandler{}
+	kH.StartClient(namespace)
 	//
-	//if namespace == "" {
-	//	log.WithFields(log.Fields{
-	//		"stage": "init",
-	//		"topic": "envvars",
-	//		"key":   "NAMESPACE",
-	//	}).Fatal("Envvar NAMESPACE must be specified")
-	//}
-	//
-	//kH := kubectl2.KubeHandler{}
-	//kH.StartClient(namespace)
-	//
-	//s3 := s3handler2.Api{}
-	//s3.InitS3(s3ip, s3region, basebucket)
+	s3 := s3handler.Api{}
+	s3.InitS3(s3ip, s3region, basebucket)
 	//
 	//cH := helpers.Controller{}
 	//err := cH.Init("kubeit-config", "/kubeit/default-settings", &kH, &s3)
@@ -161,7 +163,7 @@ func main() {
 	auth.Init(oicdClient, oicdSecret)
 
 	grpc := server.Api{}
-	grpc.Init(&database, &auth)
+	grpc.Init(&database, &auth, &s3)
 
 	grpcgw := gateway.Gateway{}
 	grpcgw.Init(&database, &auth)
