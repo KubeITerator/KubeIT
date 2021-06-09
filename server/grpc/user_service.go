@@ -6,15 +6,17 @@ import (
 	db "kubeIT/database"
 	"kubeIT/pkg/grpc/common"
 	"kubeIT/pkg/grpc/user"
+	"kubeIT/server/helpers"
 )
 
 type UserManagerServer struct {
 	user.UnimplementedUserManagerServer
-	database *db.Database
+	database   *db.Database
+	authorizer *helpers.Authorizer
 }
 
-func NewUserManagerServer(db *db.Database) *UserManagerServer {
-	return &UserManagerServer{database: db}
+func NewUserManagerServer(db *db.Database, authorizer *helpers.Authorizer) *UserManagerServer {
+	return &UserManagerServer{database: db, authorizer: authorizer}
 }
 
 func (a *UserManagerServer) AddUserToGroup(ctx context.Context, request *user.UserGroupRequest) (*common.StatusReport, error) {
@@ -23,6 +25,12 @@ func (a *UserManagerServer) AddUserToGroup(ctx context.Context, request *user.Us
 	return nil, nil
 
 }
+
+func (a *UserManagerServer) GetUserInfo(ctx context.Context, request *common.Empty) (*user.User, error) {
+
+	return GetUserPermissions(ctx, a.database, a.authorizer)
+}
+
 func (a *UserManagerServer) GetUser(ctx context.Context, request *user.UserIDRequest) (*user.User, error) {
 	return nil, nil
 }

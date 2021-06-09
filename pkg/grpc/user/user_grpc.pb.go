@@ -215,6 +215,7 @@ var ClientTokenService_ServiceDesc = grpc.ServiceDesc{
 type UserManagerClient interface {
 	AddUserToGroup(ctx context.Context, in *UserGroupRequest, opts ...grpc.CallOption) (*common.StatusReport, error)
 	GetUser(ctx context.Context, in *UserIDRequest, opts ...grpc.CallOption) (*User, error)
+	GetUserInfo(ctx context.Context, in *common.Empty, opts ...grpc.CallOption) (*User, error)
 	GetUserPermissions(ctx context.Context, in *UserIDRequest, opts ...grpc.CallOption) (*UserPermissionResponse, error)
 	ChangeUserPermission(ctx context.Context, in *ChangePermissionRequest, opts ...grpc.CallOption) (*common.StatusReport, error)
 	DeleteUser(ctx context.Context, in *DeleteUserRequest, opts ...grpc.CallOption) (*common.StatusReport, error)
@@ -241,6 +242,15 @@ func (c *userManagerClient) AddUserToGroup(ctx context.Context, in *UserGroupReq
 func (c *userManagerClient) GetUser(ctx context.Context, in *UserIDRequest, opts ...grpc.CallOption) (*User, error) {
 	out := new(User)
 	err := c.cc.Invoke(ctx, "/v1alpha2.user.UserManager/GetUser", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userManagerClient) GetUserInfo(ctx context.Context, in *common.Empty, opts ...grpc.CallOption) (*User, error) {
+	out := new(User)
+	err := c.cc.Invoke(ctx, "/v1alpha2.user.UserManager/GetUserInfo", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -289,6 +299,7 @@ func (c *userManagerClient) RemoveUserFromGroup(ctx context.Context, in *UserGro
 type UserManagerServer interface {
 	AddUserToGroup(context.Context, *UserGroupRequest) (*common.StatusReport, error)
 	GetUser(context.Context, *UserIDRequest) (*User, error)
+	GetUserInfo(context.Context, *common.Empty) (*User, error)
 	GetUserPermissions(context.Context, *UserIDRequest) (*UserPermissionResponse, error)
 	ChangeUserPermission(context.Context, *ChangePermissionRequest) (*common.StatusReport, error)
 	DeleteUser(context.Context, *DeleteUserRequest) (*common.StatusReport, error)
@@ -305,6 +316,9 @@ func (UnimplementedUserManagerServer) AddUserToGroup(context.Context, *UserGroup
 }
 func (UnimplementedUserManagerServer) GetUser(context.Context, *UserIDRequest) (*User, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUser not implemented")
+}
+func (UnimplementedUserManagerServer) GetUserInfo(context.Context, *common.Empty) (*User, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUserInfo not implemented")
 }
 func (UnimplementedUserManagerServer) GetUserPermissions(context.Context, *UserIDRequest) (*UserPermissionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserPermissions not implemented")
@@ -363,6 +377,24 @@ func _UserManager_GetUser_Handler(srv interface{}, ctx context.Context, dec func
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(UserManagerServer).GetUser(ctx, req.(*UserIDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserManager_GetUserInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(common.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserManagerServer).GetUserInfo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/v1alpha2.user.UserManager/GetUserInfo",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserManagerServer).GetUserInfo(ctx, req.(*common.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -453,6 +485,10 @@ var UserManager_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetUser",
 			Handler:    _UserManager_GetUser_Handler,
+		},
+		{
+			MethodName: "GetUserInfo",
+			Handler:    _UserManager_GetUserInfo_Handler,
 		},
 		{
 			MethodName: "GetUserPermissions",

@@ -9,11 +9,11 @@ import (
 	"github.com/coreos/go-oidc/v3/oidc"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	log "github.com/sirupsen/logrus"
-	"golang.org/x/oauth2"
 	"google.golang.org/grpc"
 	"io"
 	db "kubeIT/database"
 	"kubeIT/pkg/grpc/user"
+	"kubeIT/server/helpers"
 	"net/http"
 	"time"
 )
@@ -29,13 +29,7 @@ type Gateway struct {
 	db            *db.Database
 }
 
-type Claims struct {
-	Sub   string `json:"sub"`
-	Email string `json:"email"`
-	Name  string `json:"name"`
-}
-
-func (gw *Gateway) Init(clientid, secret string, database *db.Database) {
+func (gw *Gateway) Init(database *db.Database, authorizer *helpers.Authorizer) {
 	// Create a client connection to the gRPC server we just started
 	// This is where the gRPC-Gateway proxies the requests
 
@@ -57,7 +51,7 @@ func (gw *Gateway) Init(clientid, secret string, database *db.Database) {
 
 	gw.gwmux = runtime.NewServeMux()
 
-	err = gw.HandleAuth(context.Background(), clientid, secret)
+	err = gw.HandleAuth(context.Background(), authorizer)
 
 	if err != nil {
 		log.WithFields(log.Fields{
@@ -104,14 +98,14 @@ func (gw *Gateway) setCallbackCookie(w http.ResponseWriter, r *http.Request, nam
 	http.SetCookie(w, c)
 }
 
-func (gw *Gateway) CreateTempKey(refreshToken string, claims *Claims) (string, error) {
+func (gw *Gateway) CreateTempKey(refreshToken string, claims *helpers.Claims) (string, error) {
 
 	rnd, err := gw.randString(10)
 	if err != nil {
 		return "", err
 	}
 
-	if !gw.db.UserExists(claims.Sub) {
+	if !gw.db.UserExistsBySub(claims.Sub) {
 		u := user.User{
 			Id:           "",
 			Sub:          claims.Sub,
@@ -137,29 +131,7 @@ func (gw *Gateway) CreateTempKey(refreshToken string, claims *Claims) (string, e
 	return rnd, nil
 }
 
-func (gw *Gateway) HandleAuth(ctx context.Context, clientid, secret string) error {
-
-	provider, err := oidc.NewProvider(ctx, "http://localhost:8090/auth/realms/kubeit-test")
-	if err != nil {
-		log.WithFields(log.Fields{
-			"stage": "auth",
-			"topic": "handle_auth",
-			"key":   "new_provider",
-		}).Warn("Provider init failed")
-		return err
-	}
-	oidcConfig := &oidc.Config{
-		ClientID: clientid,
-	}
-	verifier := provider.Verifier(oidcConfig)
-
-	config := oauth2.Config{
-		ClientID:     clientid,
-		ClientSecret: secret,
-		Endpoint:     provider.Endpoint(),
-		RedirectURL:  "http://127.0.0.1:8091/auth/callback",
-		Scopes:       []string{oidc.ScopeOpenID, "profile", "email"},
-	}
+func (gw *Gateway) HandleAuth(ctx context.Context, auth *helpers.Authorizer) (err error) {
 
 	err = gw.gwmux.HandlePath("GET", "/auth/login", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
 		state, err := gw.randString(16)
@@ -185,7 +157,7 @@ func (gw *Gateway) HandleAuth(ctx context.Context, clientid, secret string) erro
 		gw.setCallbackCookie(w, r, "state", state)
 		gw.setCallbackCookie(w, r, "nonce", nonce)
 
-		http.Redirect(w, r, config.AuthCodeURL(state, oidc.Nonce(nonce)), http.StatusFound)
+		http.Redirect(w, r, auth.Config.AuthCodeURL(state, oidc.Nonce(nonce)), http.StatusFound)
 	})
 
 	if err != nil {
@@ -284,7 +256,7 @@ func (gw *Gateway) HandleAuth(ctx context.Context, clientid, secret string) erro
 			return
 		}
 
-		oauth2Token, err := config.Exchange(ctx, r.URL.Query().Get("code"))
+		oauth2Token, err := auth.Config.Exchange(ctx, r.URL.Query().Get("code"))
 		if err != nil {
 			log.WithFields(log.Fields{
 				"stage": "auth",
@@ -294,23 +266,14 @@ func (gw *Gateway) HandleAuth(ctx context.Context, clientid, secret string) erro
 			http.Error(w, "Internal error", http.StatusInternalServerError)
 			return
 		}
-		rawIDToken, ok := oauth2Token.Extra("id_token").(string)
-		if !ok {
+		verif, oldnonce, claims := auth.Verify(ctx, oauth2Token)
+
+		if !verif {
 			log.WithFields(log.Fields{
 				"stage": "auth",
-				"topic": "auth_callback",
-				"key":   "id_token_not_found",
-			}).Warn("id token could not be found")
-			http.Error(w, "Internal error", http.StatusInternalServerError)
-			return
-		}
-		idToken, err := verifier.Verify(ctx, rawIDToken)
-		if err != nil {
-			log.WithFields(log.Fields{
-				"stage": "auth",
-				"topic": "auth_callback",
-				"key":   "verify_id_token",
-			}).Warn("failed to verify id_token")
+				"topic": "verify_token",
+				"key":   "token_exchange",
+			}).Warn("token verification failed")
 			http.Error(w, "Internal error", http.StatusInternalServerError)
 			return
 		}
@@ -325,25 +288,13 @@ func (gw *Gateway) HandleAuth(ctx context.Context, clientid, secret string) erro
 			http.Error(w, "nonce not found", http.StatusBadRequest)
 			return
 		}
-		if idToken.Nonce != nonce.Value {
+		if oldnonce != nonce.Value {
 			log.WithFields(log.Fields{
 				"stage": "auth",
 				"topic": "auth_callback",
 				"key":   "nonce_mismatched",
 			}).Warn("nonce could not be matched")
 			http.Error(w, "nonce did not match", http.StatusBadRequest)
-			return
-		}
-
-		claims := &Claims{}
-
-		if err := idToken.Claims(claims); err != nil {
-			log.WithFields(log.Fields{
-				"stage": "auth",
-				"topic": "auth_callback",
-				"key":   "id_token_match",
-			}).Warn("Id token could not be mapped to claims")
-			http.Error(w, "Internal error", http.StatusInternalServerError)
 			return
 		}
 

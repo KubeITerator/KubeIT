@@ -11,6 +11,7 @@ package user
 import (
 	"context"
 	"io"
+	"kubeIT/pkg/grpc/common"
 	"net/http"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
@@ -103,14 +104,6 @@ func request_ClientTokenService_GetToken_0(ctx context.Context, marshaler runtim
 	var protoReq UserTokenIDRequest
 	var metadata runtime.ServerMetadata
 
-	newReader, berr := utilities.IOReaderFactory(req.Body)
-	if berr != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
-	}
-	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-
 	var (
 		val string
 		ok  bool
@@ -146,14 +139,6 @@ func request_ClientTokenService_GetToken_0(ctx context.Context, marshaler runtim
 func local_request_ClientTokenService_GetToken_0(ctx context.Context, marshaler runtime.Marshaler, server ClientTokenServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq UserTokenIDRequest
 	var metadata runtime.ServerMetadata
-
-	newReader, berr := utilities.IOReaderFactory(req.Body)
-	if berr != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
-	}
-	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
 
 	var (
 		val string
@@ -191,14 +176,6 @@ func request_ClientTokenService_GetTokenStatusList_0(ctx context.Context, marsha
 	var protoReq UserIDRequest
 	var metadata runtime.ServerMetadata
 
-	newReader, berr := utilities.IOReaderFactory(req.Body)
-	if berr != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
-	}
-	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-
 	var (
 		val string
 		ok  bool
@@ -224,14 +201,6 @@ func request_ClientTokenService_GetTokenStatusList_0(ctx context.Context, marsha
 func local_request_ClientTokenService_GetTokenStatusList_0(ctx context.Context, marshaler runtime.Marshaler, server ClientTokenServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq UserIDRequest
 	var metadata runtime.ServerMetadata
-
-	newReader, berr := utilities.IOReaderFactory(req.Body)
-	if berr != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
-	}
-	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
 
 	var (
 		val string
@@ -467,6 +436,24 @@ func local_request_UserManager_GetUser_0(ctx context.Context, marshaler runtime.
 
 }
 
+func request_UserManager_GetUserInfo_0(ctx context.Context, marshaler runtime.Marshaler, client UserManagerClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq common.Empty
+	var metadata runtime.ServerMetadata
+
+	msg, err := client.GetUserInfo(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+
+}
+
+func local_request_UserManager_GetUserInfo_0(ctx context.Context, marshaler runtime.Marshaler, server UserManagerServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq common.Empty
+	var metadata runtime.ServerMetadata
+
+	msg, err := server.GetUserInfo(ctx, &protoReq)
+	return msg, metadata, err
+
+}
+
 func request_UserManager_GetUserPermissions_0(ctx context.Context, marshaler runtime.Marshaler, client UserManagerClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq UserIDRequest
 	var metadata runtime.ServerMetadata
@@ -668,16 +655,6 @@ func request_UserManager_RemoveUserFromGroup_0(ctx context.Context, marshaler ru
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "group_id", err)
 	}
 
-	val, ok = pathParams["user_id"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "user_id")
-	}
-
-	protoReq.UserId, err = runtime.String(val)
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "user_id", err)
-	}
-
 	msg, err := client.RemoveUserFromGroup(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
@@ -710,16 +687,6 @@ func local_request_UserManager_RemoveUserFromGroup_0(ctx context.Context, marsha
 	protoReq.GroupId, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "group_id", err)
-	}
-
-	val, ok = pathParams["user_id"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "user_id")
-	}
-
-	protoReq.UserId, err = runtime.String(val)
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "user_id", err)
 	}
 
 	msg, err := server.RemoveUserFromGroup(ctx, &protoReq)
@@ -756,7 +723,7 @@ func RegisterClientTokenServiceHandlerServer(ctx context.Context, mux *runtime.S
 
 	})
 
-	mux.Handle("POST", pattern_ClientTokenService_GetToken_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_ClientTokenService_GetToken_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
@@ -779,7 +746,7 @@ func RegisterClientTokenServiceHandlerServer(ctx context.Context, mux *runtime.S
 
 	})
 
-	mux.Handle("POST", pattern_ClientTokenService_GetTokenStatusList_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_ClientTokenService_GetTokenStatusList_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
@@ -877,6 +844,29 @@ func RegisterUserManagerHandlerServer(ctx context.Context, mux *runtime.ServeMux
 		}
 
 		forward_UserManager_GetUser_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("GET", pattern_UserManager_GetUserInfo_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/v1alpha2.user.UserManager/GetUserInfo")
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_UserManager_GetUserInfo_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_UserManager_GetUserInfo_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -1033,7 +1023,7 @@ func RegisterClientTokenServiceHandlerClient(ctx context.Context, mux *runtime.S
 
 	})
 
-	mux.Handle("POST", pattern_ClientTokenService_GetToken_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_ClientTokenService_GetToken_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -1053,7 +1043,7 @@ func RegisterClientTokenServiceHandlerClient(ctx context.Context, mux *runtime.S
 
 	})
 
-	mux.Handle("POST", pattern_ClientTokenService_GetTokenStatusList_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_ClientTokenService_GetTokenStatusList_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -1194,6 +1184,26 @@ func RegisterUserManagerHandlerClient(ctx context.Context, mux *runtime.ServeMux
 
 	})
 
+	mux.Handle("GET", pattern_UserManager_GetUserInfo_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/v1alpha2.user.UserManager/GetUserInfo")
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_UserManager_GetUserInfo_0(rctx, inboundMarshaler, client, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_UserManager_GetUserInfo_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
 	mux.Handle("GET", pattern_UserManager_GetUserPermissions_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
@@ -1278,23 +1288,27 @@ func RegisterUserManagerHandlerClient(ctx context.Context, mux *runtime.ServeMux
 }
 
 var (
-	pattern_UserManager_AddUserToGroup_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 1, 0, 4, 1, 5, 4}, []string{"v1", "admin", "group", "group_id", "user_id"}, ""))
+	pattern_UserManager_AddUserToGroup_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "group", "group_id", "user_id"}, ""))
 
 	pattern_UserManager_GetUser_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"v1", "user", "user_id"}, ""))
 
+	pattern_UserManager_GetUserInfo_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "user", "info"}, ""))
+
 	pattern_UserManager_GetUserPermissions_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"v1", "user", "user_id", "perm"}, ""))
 
-	pattern_UserManager_ChangeUserPermission_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "admin", "group", "group_id"}, ""))
+	pattern_UserManager_ChangeUserPermission_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"v1", "group", "group_id"}, ""))
 
 	pattern_UserManager_DeleteUser_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"v1", "user", "user_id"}, ""))
 
-	pattern_UserManager_RemoveUserFromGroup_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 1, 0, 4, 1, 5, 4}, []string{"v1", "admin", "group", "group_id", "user_id"}, ""))
+	pattern_UserManager_RemoveUserFromGroup_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "admin", "group", "group_id"}, ""))
 )
 
 var (
 	forward_UserManager_AddUserToGroup_0 = runtime.ForwardResponseMessage
 
 	forward_UserManager_GetUser_0 = runtime.ForwardResponseMessage
+
+	forward_UserManager_GetUserInfo_0 = runtime.ForwardResponseMessage
 
 	forward_UserManager_GetUserPermissions_0 = runtime.ForwardResponseMessage
 

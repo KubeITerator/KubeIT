@@ -23,7 +23,7 @@ func (db *Database) AddUser(u *user.User) (id primitive.ObjectID, err error) {
 	return res.InsertedID.(primitive.ObjectID), e
 }
 
-func (db *Database) UserExists(sub string) bool {
+func (db *Database) UserExistsBySub(sub string) bool {
 	num, _ := db.collections.users.CountDocuments(db.ctx, bson.D{{"sub", sub}})
 
 	if num > 0 {
@@ -46,6 +46,13 @@ func (db *Database) RemoveUser(userid primitive.ObjectID) (int64, error) {
 func (db *Database) GetUserByID(id primitive.ObjectID) (us *user.User, err error) {
 	u := &user.User{}
 	err = db.collections.users.FindOne(db.ctx, bson.M{"_id": id}).Decode(u)
+
+	return u, err
+}
+
+func (db *Database) GetUserBySub(sub string) (us *user.User, err error) {
+	u := &user.User{}
+	err = db.collections.users.FindOne(db.ctx, bson.M{"sub": sub}).Decode(u)
 
 	return u, err
 }

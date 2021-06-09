@@ -6,6 +6,7 @@ import (
 	db "kubeIT/database"
 	"kubeIT/server"
 	"kubeIT/server/gateway"
+	"kubeIT/server/helpers"
 	"os"
 )
 
@@ -156,10 +157,13 @@ func main() {
 		}).Fatal("Database init failed")
 	}
 
+	auth := helpers.Authorizer{}
+	auth.Init(oicdClient, oicdSecret)
+
 	grpc := server.Api{}
-	grpc.Init(&database)
+	grpc.Init(&database, &auth)
 
 	grpcgw := gateway.Gateway{}
-	grpcgw.Init(oicdClient, oicdSecret, &database)
+	grpcgw.Init(&database, &auth)
 
 }

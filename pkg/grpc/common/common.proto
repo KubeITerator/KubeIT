@@ -24,4 +24,9 @@ message StatusReport{
   string message = 2;
 }
 
+
+message IDRequest{
+  string id = 1;
+}
+
 message Empty{}

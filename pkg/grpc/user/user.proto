@@ -51,6 +51,12 @@ service UserManager {
     };
   };
 
+  rpc GetUserInfo (v1alpha2.common.Empty) returns (User){
+    option (google.api.http) = {
+      get: "/v1/user/info"
+    };
+  };
+
   rpc GetUserPermissions (UserIDRequest) returns  (UserPermissionResponse){
     option (google.api.http) = {
       get: "/v1/user/{user_id}/perm"

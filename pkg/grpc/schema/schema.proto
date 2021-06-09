@@ -10,6 +10,28 @@ import "pkg/grpc/common/common.proto";
 import "pkg/dependencies/tagger/tagger.proto";
 
 
+service SchemaManagementService {
+  rpc CreateSchema (Schema) returns (v1alpha2.common.StatusReport){
+    option (google.api.http) = {
+      post: "/v1/schema"
+      body: "*"
+    };
+  };
+
+  rpc GetSchema (v1alpha2.common.IDRequest) returns (v1alpha2.common.StatusReport){
+    option (google.api.http) = {
+      get: "/v1/schema/{id}"
+    };
+  };
+
+  rpc DeleteSchema (v1alpha2.common.IDRequest) returns (v1alpha2.common.StatusReport) {
+    option (google.api.http) = {
+      delete: "/v1/schema/{id}"
+    };
+  };
+}
+
+
 
 message Volumes {
   string volume_name = 1;

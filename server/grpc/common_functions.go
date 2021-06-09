@@ -2,27 +2,47 @@ package grpc
 
 import (
 	"context"
-	"fmt"
-	"google.golang.org/genproto/googleapis/spanner/admin/database/v1"
+	"golang.org/x/oauth2"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
+	db "kubeIT/database"
+	"kubeIT/pkg/grpc/user"
+	"kubeIT/server/helpers"
+	"strings"
 )
 
-func GetUserPermissions(ctx context.Context, db *database.Database, funcName string) (bool, error) {
+func GetUserPermissions(ctx context.Context, db *db.Database, authorizer *helpers.Authorizer) (*user.User, error) {
 
 	md, ok := metadata.FromIncomingContext(ctx)
 
 	if !ok {
-		return false, status.Errorf(codes.DataLoss, "UnaryEcho: failed to get metadata")
+		return nil, status.Errorf(codes.DataLoss, "UnaryEcho: failed to get metadata")
 	}
 
 	if t, found := md["authorization"]; found {
-		fmt.Println(t)
-		return true, nil
+
+		if len(t) != 1 {
+			return nil, status.Errorf(codes.InvalidArgument, "Unknown authorization format")
+		}
+
+		splits := strings.Split(t[0], " ")
+		if splits[0] != "Bearer" {
+			return nil, status.Errorf(codes.InvalidArgument, "Token type must be Bearer")
+		}
+
+		verif, _, claims := authorizer.Verify(ctx, &oauth2.Token{AccessToken: splits[1]})
+
+		if !verif {
+			return nil, status.Errorf(codes.Unauthenticated, "Token expired")
+		}
+
+		us, err := db.GetUserBySub(claims.Sub)
+
+		return us, err
 
 	} else {
-		return false, status.Errorf(codes.DataLoss, "No token found: failed to get authorization token")
+		return nil, status.Errorf(codes.DataLoss, "No token found: failed to get authorization token")
 	}
 
 }

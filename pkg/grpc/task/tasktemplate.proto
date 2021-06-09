@@ -8,6 +8,29 @@ import "pkg/grpc/common/common.proto";
 import "pkg/dependencies/tagger/tagger.proto";
 
 
+service TaskManagementService {
+  rpc CreateTask (Task) returns (v1alpha2.common.StatusReport){
+    option (google.api.http) = {
+      post: "/v1/task"
+      body: "*"
+    };
+  };
+
+  rpc GetTask (v1alpha2.common.IDRequest) returns (v1alpha2.common.StatusReport){
+    option (google.api.http) = {
+      get: "/v1/task/{id}"
+    };
+  };
+
+  rpc DeleteGroup (v1alpha2.common.IDRequest) returns (v1alpha2.common.StatusReport) {
+    option (google.api.http) = {
+      delete: "/v1/task/{id}"
+    };
+  };
+}
+
+
+
 message InputParams {
   string name = 1;
   string value = 2;
