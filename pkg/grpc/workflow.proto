@@ -51,7 +51,7 @@ message Workflow {
   uint32 limit = 6;
   string hash = 7;
   repeated Parameter parameter = 8;
-  repeated kubeit.v1beta1..schema.Inputfiles inputfiles = 9;
+  repeated kubeit.v1beta1.schema.Inputfiles inputfiles = 9;
   WorkflowStatus status = 10;
 }
 

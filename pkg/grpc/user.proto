@@ -5,130 +5,76 @@ package kubeit.v1beta1.user;
 option go_package = "github.com/KubeITerator/KubeIT/pkg/grpc/user";
 
 import "pkg/dependencies/google/api/annotations.proto";
-import "pkg/grpc/common/common.proto";
+import "pkg/grpc/common.proto";
 import "pkg/dependencies/tagger/tagger.proto";
 
 
-service ClientTokenService {
+service ClientService {
   rpc CreateToken (TokenRequest) returns (Token){
     option (google.api.http) = {
-      post: "/v1/user/{user_id}/client"
+      post: "/v1/client/{client_id}"
       body: "*"
     };
   };
 
-  rpc GetToken (UserTokenIDRequest) returns (TokenStatus){
+  rpc GetToken (ClientTokenIDRequest) returns (TokenStatus){
     option (google.api.http) = {
-      get: "/v1/user/{user_id}/client/{token_id}"
+      get: "/v1/client/{client_id}"
     };
   };
 
   rpc GetTokenStatusList (UserIDRequest) returns (TokenStatusList){
     option (google.api.http) = {
-      get: "/v1/user/{user_id}/client/list"
+      get: "/v1/client/{client_id}/list"
     };
   };
 
-  rpc DeleteToken (UserTokenIDRequest) returns (v1alpha2.common.StatusReport) {
+  rpc DeleteToken (ClientTokenIDRequest) returns (kubeit.v1beta1.common.StatusReport) {
     option (google.api.http) = {
-      delete: "/v1/user/{user_id}/client/{token_id}"
-    };
-  };
-}
-
-
-service UserManager {
-  rpc AddUserToGroup (UserGroupRequest) returns (v1alpha2.common.StatusReport){
-    option (google.api.http) = {
-      post: "/v1/group/{group_id}/{user_id}"
-      body: "*"
+      delete: "/v1/client/{client_id}/token/{token_id}"
     };
   };
 
-  rpc GetUser (UserIDRequest) returns (User){
+  rpc GetClient (ClientIDRequest) returns (Client){
     option (google.api.http) = {
-      get: "/v1/user/{user_id}"
+      get: "/v1/client/{client_id}"
     };
   };
 
-  rpc GetUserInfo (v1alpha2.common.Empty) returns (User){
+  rpc GetClientInfo (ClientIDRequest) returns (ClientInfo){
     option (google.api.http) = {
-      get: "/v1/user/info"
+      get: "/v1/client/{client_id}/info"
     };
   };
 
-  rpc GetUserPermissions (UserIDRequest) returns  (UserPermissionResponse){
+  rpc DeleteClient (ClientIDRequest) returns (kubeit.v1beta1.common.StatusReport) {
     option (google.api.http) = {
-      get: "/v1/user/{user_id}/perm"
+      delete: "/v1/client/{client_id}"
     };
-
-  };
-
-  rpc ChangeUserPermission (ChangePermissionRequest) returns (v1alpha2.common.StatusReport){
-    option (google.api.http) = {
-      post: "/v1/group/{group_id}"
-      body: "*"
-    };
-  };
-
-  rpc DeleteUser (DeleteUserRequest) returns (v1alpha2.common.StatusReport) {
-    option (google.api.http) = {
-      delete: "/v1/user/{user_id}"
-    };
-
-  };
-
-  rpc RemoveUserFromGroup (UserGroupRequest) returns (v1alpha2.common.StatusReport) {
-    option (google.api.http) = {
-      post: "/v1/admin/group/{group_id}"
-      body: "*"
-    };
-
   };
 
 }
 
-message UserGroupRequest {
-  string group_id = 1;
-  string user_id = 2;
-}
-
-message UserIDRequest {
-  string user_id = 1;
-}
-
-message ChangePermissionRequest{
-  string group_id = 1;
-  string user_id = 2;
-  v1alpha2.common.GrpPermissionLevel perm_level = 3;
-}
-
-message UserPermissionResponse{
-  string user_id = 1;
-  bool is_admin = 2;
-  repeated GroupPermission g_permissions = 3;
-}
-
-message DeleteUserRequest{
-  string user_id = 1;
+message ClientIDRequest {
+  string client_id = 1;
 }
 
 message TokenIDRequest{
     string token_id = 1;
 }
 
-message UserTokenIDRequest{
-  string token_id = 1;
-  string user_id = 2;
+message ClientTokenIDRequest{
+  string token = 1;
+  string client_id = 2;
 }
 
 message TokenRequest {
-  string user_id = 1;
+  string client_id = 1;
   string token_name = 2;
 }
 
 message Token {
-  string id = 1 [(tagger.tags) = "bson:\"_id,omitempty\""];
+  string id = 1;
   string userid = 2;
   string name = 3;
   string token = 4;
@@ -147,18 +93,17 @@ message TokenStatus {
   string from = 4;
 }
 
-message User {
-  string id = 1 [(tagger.tags) = "bson:\"_id,omitempty\""];
-  string sub = 2;
+message Client {
+  string id = 1;
   string name = 3;
   string email = 4;
   bool admin = 5;
   repeated Token tokens = 6;
-  repeated GroupPermission g_permissions = 7;
 }
 
-message GroupPermission {
-  string group_id = 1;
-  v1alpha2.common.GrpPermissionLevel permission = 2;
-  repeated string project_ids = 3;
+message ClientInfo {
+  string id = 1;
+  string name = 3;
+  string email = 4;
+  bool admin = 5;
 }
