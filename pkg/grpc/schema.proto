@@ -45,7 +45,7 @@ message Parameters {
   bool required = 3;
 }
 
-message Inputfiles {
+message Inputfile {
   string name = 1;
   string type = 2;
 }
@@ -58,17 +58,18 @@ message Arguments {
 
 message Iterator {
   string type = 1;
-  string from = 2;
+  string file = 2;
   string parameters = 3;
 }
 
 message Tasks {
-  string task_id = 1;
-  string step_name = 2;
+  string name = 1;
+  string task_id = 2;
   repeated string dependencies = 3;
   repeated Arguments arguments = 4;
-  Iterator iterator = 5;
-  string condition = 6;
+  repeated Inputfile inputfiles = 5;
+  Iterator iterator = 6;
+  string condition = 7;
 }
 
 message Schema {
@@ -81,7 +82,7 @@ message Schema {
   string description = 7;
   string hash = 8;
   repeated Parameters parameters = 9;
-  repeated Inputfiles inputfiles = 10;
+  repeated Inputfile inputfiles = 10;
   repeated Tasks tasks = 11;
   string yaml = 12;
 }

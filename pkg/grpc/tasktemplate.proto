@@ -58,6 +58,7 @@ message OutputParams {
 message OutputArtifact {
   string name = 1;
   string path = 2;
+  string type = 3;
 }
 
 message Outputs {
@@ -95,18 +96,16 @@ message Container {
   uint32 runAsUser = 5;
   string command = 6;
   repeated string args = 7;
-  repeated VolumeMounts volume_mounts = 8;
-  repeated Env env = 9;
+  repeated Env env = 8;
 }
 
 message Task {
   string id = 1;
   string name = 2;
-  string short_description = 3;
-  string description = 4;
-  string yaml = 5;
-  Inputs inputs = 6;
-  Outputs outputs = 7;
-  Container container = 8;
-  Container init_container = 9;
+  string description = 3;
+  Inputs inputs = 4;
+  Outputs outputs = 5;
+  repeated VolumeMounts volume_mounts = 8;
+  Container container = 6;
+  Container init_container = 7;
 }
