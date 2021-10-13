@@ -1,7 +1,7 @@
 syntax = "proto3";
 
-package v1alpha2.workflow;
-option go_package = "kubeIT/pkg/grpc/workflow";
+package kubeit.v1beta1.workflow;
+option go_package = "github.com/KubeITerator/KubeIT/pkg/grpc/workflow";
 
 import "pkg/dependencies/google/api/annotations.proto";
 import "pkg/grpc/schema/schema.proto";
@@ -29,14 +29,6 @@ service WorkflowManagementService {
     };
   };
 
-
-  rpc UpdateStatus (StatusUpdate) returns (v1alpha2.common.StatusReport) {
-    option (google.api.http) = {
-      post: "/v1/workflow/{workflow_id}/status"
-      body: "*"
-    };
-  };
-
   rpc GetStatus (v1alpha2.common.IDRequest) returns (WorkflowStatus) {
     option (google.api.http) = {
       get: "/v1/workflow/{id}/status"
@@ -51,7 +43,7 @@ message Parameter {
 }
 
 message Workflow {
-  string id = 1 [(tagger.tags) = "bson:\"_id,omitempty\""];
+  string id = 1;
   string name = 2;
   string template_id = 3;
   string project = 4;
@@ -59,7 +51,7 @@ message Workflow {
   uint32 limit = 6;
   string hash = 7;
   repeated Parameter parameter = 8;
-  repeated v1alpha2.schema.Inputfiles inputfiles = 9;
+  repeated kubeit.v1beta1..schema.Inputfiles inputfiles = 9;
   WorkflowStatus status = 10;
 }
 

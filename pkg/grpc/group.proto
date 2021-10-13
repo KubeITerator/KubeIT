@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package v1alpha2.group;
+package kubeit.v1beta1.group;
 
 option go_package = "kubeIT/pkg/grpc/group";
 
