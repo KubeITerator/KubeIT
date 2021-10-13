@@ -1,30 +1,30 @@
 syntax = "proto3";
 
-package v1alpha2.schema;
+package kubeit.v1beta1.schema;
 
 option go_package = "github.com/KubeITerator/KubeIT/pkg/grpc/schema";
 
 
 import "pkg/dependencies/google/api/annotations.proto";
-import "pkg/grpc/common/common.proto";
+import "pkg/grpc/common.proto";
 import "pkg/dependencies/tagger/tagger.proto";
 
 
 service SchemaManagementService {
-  rpc CreateSchema (Schema) returns (v1alpha2.common.StatusReport){
+  rpc CreateSchema (Schema) returns (kubeit.v1beta1.common.StatusReport){
     option (google.api.http) = {
       post: "/v1/schema"
       body: "*"
     };
   };
 
-  rpc GetSchema (v1alpha2.common.IDRequest) returns (v1alpha2.common.StatusReport){
+  rpc GetSchema (v1alpha2.common.IDRequest) returns (kubeit.v1beta1.common.StatusReport){
     option (google.api.http) = {
       get: "/v1/schema/{id}"
     };
   };
 
-  rpc DeleteSchema (v1alpha2.common.IDRequest) returns (v1alpha2.common.StatusReport) {
+  rpc DeleteSchema (v1alpha2.common.IDRequest) returns (kubeit.v1beta1.common.StatusReport) {
     option (google.api.http) = {
       delete: "/v1/schema/{id}"
     };
@@ -63,7 +63,7 @@ message Iterator {
 }
 
 message Tasks {
-  string task_reference = 1;
+  string task_id = 1;
   string step_name = 2;
   repeated string dependencies = 3;
   repeated Arguments arguments = 4;
@@ -72,20 +72,16 @@ message Tasks {
 }
 
 message Schema {
-  string id = 1 [(tagger.tags) = "bson:\"_id,omitempty\""];
-  string category = 2;
-  string name = 3;
-  string version = 4;
-  uint32 priority = 5;
-  uint32 limit = 6;
-  repeated Volumes volumes = 7;
-  string short_description = 8;
-  string description = 9;
-  string creator = 10;
-  v1alpha2.common.SharingStatus shared = 11;
-  string hash = 12;
-  repeated Parameters parameters = 13;
-  repeated Inputfiles inputfiles = 14;
-  repeated Tasks tasks = 15;
-  string yaml = 16;
+  string id = 1;
+  string name = 2;
+  string version = 3;
+  uint32 priority = 4;
+  uint32 limit = 5;
+  repeated Volumes volumes = 6;
+  string description = 7;
+  string hash = 8;
+  repeated Parameters parameters = 9;
+  repeated Inputfiles inputfiles = 10;
+  repeated Tasks tasks = 11;
+  string yaml = 12;
 }

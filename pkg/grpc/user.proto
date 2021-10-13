@@ -104,7 +104,7 @@ message Client {
   string id = 1;
   string name = 3;
   string email = 4;
-  int32 priority = 5;
+  uint32 priority = 5;
   bool admin = 6;
   repeated Token tokens = 7;
 }
@@ -113,6 +113,6 @@ message ClientInfo {
   string id = 1;
   string name = 3;
   string email = 4;
-  int32 priority = 5;
+  uint32 priority = 5;
   bool admin = 6 ;
 }

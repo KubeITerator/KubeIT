@@ -4,26 +4,26 @@ package kubeit.v1beta1.workflow;
 option go_package = "github.com/KubeITerator/KubeIT/pkg/grpc/workflow";
 
 import "pkg/dependencies/google/api/annotations.proto";
-import "pkg/grpc/schema/schema.proto";
-import "pkg/grpc/common/common.proto";
+import "pkg/grpc/schema.proto";
+import "pkg/grpc/common.proto";
 import "pkg/dependencies/tagger/tagger.proto";
 
 
 service WorkflowManagementService {
-  rpc CreateWorkflow (Workflow) returns (v1alpha2.common.StatusReport){
+  rpc CreateWorkflow (Workflow) returns (kubeit.v1beta1.common.StatusReport){
     option (google.api.http) = {
       post: "/v1/workflow"
       body: "*"
     };
   };
 
-  rpc GetWorkflow (v1alpha2.common.IDRequest) returns (v1alpha2.common.StatusReport){
+  rpc GetWorkflow (v1alpha2.common.IDRequest) returns (kubeit.v1beta1.common.StatusReport){
     option (google.api.http) = {
       get: "/v1/workflow/{id}"
     };
   };
 
-  rpc DeleteWorkflow (v1alpha2.common.IDRequest) returns (v1alpha2.common.StatusReport) {
+  rpc DeleteWorkflow (v1alpha2.common.IDRequest) returns (kubeit.v1beta1.common.StatusReport) {
     option (google.api.http) = {
       delete: "/v1/workflow/{id}"
     };
@@ -46,13 +46,10 @@ message Workflow {
   string id = 1;
   string name = 2;
   string template_id = 3;
-  string project = 4;
-  uint32 priority = 5;
-  uint32 limit = 6;
-  string hash = 7;
-  repeated Parameter parameter = 8;
-  repeated kubeit.v1beta1.schema.Inputfiles inputfiles = 9;
-  WorkflowStatus status = 10;
+  string hash = 4;
+  repeated Parameter parameter = 5;
+  repeated kubeit.v1beta1.schema.Inputfiles inputfiles = 6;
+  WorkflowStatus status = 7;
 }
 
 message WorkflowStatus {
@@ -62,11 +59,4 @@ message WorkflowStatus {
   uint32 pods_total = 4;
   uint32 pods_finished = 5;
   uint32 number_of_results = 6;
-}
-
-message StatusUpdate{
-  string workflow_id = 1;
-  string status = 3;
-  uint32 pods_total = 4;
-  uint32 pods_finished = 5;
 }

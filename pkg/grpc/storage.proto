@@ -4,7 +4,7 @@ package kubeit.v1beta1.storage;
 option go_package = "github.com/KubeITerator/KubeIT/pkg/grpc/storage";
 
 import "pkg/dependencies/google/api/annotations.proto";
-import "pkg/grpc/common/common.proto";
+import "pkg/grpc/common.proto";
 import "pkg/dependencies/tagger/tagger.proto";
 
 service StorageManagementService {
@@ -22,13 +22,13 @@ service StorageManagementService {
   }
 
 
-  rpc FinishUpload (IDmessage) returns (v1alpha2.common.StatusReport){
+  rpc FinishUpload (IDmessage) returns (kubeit.v1beta1.common.StatusReport){
     option (google.api.http) = {
       post: "/v1/upload/{transfer_id}"
     };
   };
 
-  rpc DeleteUpload (IDmessage) returns (v1alpha2.common.StatusReport) {
+  rpc DeleteUpload (IDmessage) returns (kubeit.v1beta1.common.StatusReport) {
     option (google.api.http) = {
       post: "/v1/upload/{transfer_id}"
     };
@@ -58,7 +58,7 @@ message IDmessage {
 
 
 message File {
-  string id = 1 [(tagger.tags) = "bson:\"_id,omitempty\""];
+  string id = 1;
   string user_id = 2;
   string name = 3;
   StorageInfo storage_info = 4;

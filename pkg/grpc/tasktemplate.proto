@@ -4,7 +4,7 @@ package kubeit.v1beta1.task;
 option go_package = "github.com/KubeITerator/KubeIT/pkg/grpc/task";
 
 import "pkg/dependencies/google/api/annotations.proto";
-import "pkg/grpc/common/common.proto";
+import "pkg/grpc/common.proto";
 import "pkg/dependencies/tagger/tagger.proto";
 
 
@@ -16,13 +16,13 @@ service TaskManagementService {
     };
   };
 
-  rpc GetTask (v1alpha2.common.IDRequest) returns (v1alpha2.common.StatusReport){
+  rpc GetTask (kubeit.v1beta1.common.IDRequest) returns (kubeit.v1beta1.common.StatusReport){
     option (google.api.http) = {
       get: "/v1/task/{id}"
     };
   };
 
-  rpc DeleteGroup (v1alpha2.common.IDRequest) returns (v1alpha2.common.StatusReport) {
+  rpc DeleteGroup (kubeit.v1beta1.common.IDRequest) returns (kubeit.v1beta1.common.StatusReport) {
     option (google.api.http) = {
       delete: "/v1/task/{id}"
     };
@@ -100,15 +100,13 @@ message Container {
 }
 
 message Task {
-  string id = 1 [(tagger.tags) = "bson:\"_id,omitempty\""];
+  string id = 1;
   string name = 2;
   string short_description = 3;
   string description = 4;
-  string creator = 5;
-  v1alpha2.common.SharingStatus shared = 6;
-  string yaml = 7;
-  Inputs inputs = 8;
-  Outputs outputs = 9;
-  Container container = 10;
-  Container init_container = 11;
+  string yaml = 5;
+  Inputs inputs = 6;
+  Outputs outputs = 7;
+  Container container = 8;
+  Container init_container = 9;
 }
