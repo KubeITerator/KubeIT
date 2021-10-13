@@ -23,7 +23,7 @@ service ClientService {
     };
   };
 
-  rpc GetTokenStatusList (UserIDRequest) returns (TokenStatusList){
+  rpc GetTokenStatusList (ClientID) returns (TokenStatusList){
     option (google.api.http) = {
       get: "/v1/client/{client_id}/list"
     };
@@ -35,19 +35,26 @@ service ClientService {
     };
   };
 
-  rpc GetClient (ClientIDRequest) returns (Client){
+  rpc CreateOrUpdateClient (Client) returns (ClientID) {
+    option (google.api.http) = {
+      post: "/v1/client/"
+      body: "*"
+    };
+  };
+
+  rpc GetClient (ClientID) returns (Client){
     option (google.api.http) = {
       get: "/v1/client/{client_id}"
     };
   };
 
-  rpc GetClientInfo (ClientIDRequest) returns (ClientInfo){
+  rpc GetClientInfo (ClientID) returns (ClientInfo){
     option (google.api.http) = {
       get: "/v1/client/{client_id}/info"
     };
   };
 
-  rpc DeleteClient (ClientIDRequest) returns (kubeit.v1beta1.common.StatusReport) {
+  rpc DeleteClient (ClientID) returns (kubeit.v1beta1.common.StatusReport) {
     option (google.api.http) = {
       delete: "/v1/client/{client_id}"
     };
@@ -55,11 +62,11 @@ service ClientService {
 
 }
 
-message ClientIDRequest {
+message ClientID {
   string client_id = 1;
 }
 
-message TokenIDRequest{
+message TokenID{
     string token_id = 1;
 }
 
@@ -97,13 +104,15 @@ message Client {
   string id = 1;
   string name = 3;
   string email = 4;
-  bool admin = 5;
-  repeated Token tokens = 6;
+  int32 priority = 5;
+  bool admin = 6;
+  repeated Token tokens = 7;
 }
 
 message ClientInfo {
   string id = 1;
   string name = 3;
   string email = 4;
-  bool admin = 5;
+  int32 priority = 5;
+  bool admin = 6 ;
 }
