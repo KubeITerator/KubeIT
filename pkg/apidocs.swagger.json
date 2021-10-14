@@ -491,8 +491,36 @@
           "StorageManagementService"
         ]
       },
-      "post": {
+      "delete": {
         "operationId": "StorageManagementService_DeleteUpload",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1beta1StatusReport"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "transferId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "StorageManagementService"
+        ]
+      },
+      "post": {
+        "operationId": "StorageManagementService_FinishUpload",
         "responses": {
           "200": {
             "description": "A successful response.",

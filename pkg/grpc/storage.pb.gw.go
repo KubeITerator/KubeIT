@@ -302,7 +302,7 @@ func RegisterStorageManagementServiceHandlerServer(ctx context.Context, mux *run
 
 	})
 
-	mux.Handle("POST", pattern_StorageManagementService_GetUploadUrl_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_StorageManagementService_GetUploadUrl_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
@@ -348,7 +348,7 @@ func RegisterStorageManagementServiceHandlerServer(ctx context.Context, mux *run
 
 	})
 
-	mux.Handle("POST", pattern_StorageManagementService_DeleteUpload_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("DELETE", pattern_StorageManagementService_DeleteUpload_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
@@ -455,7 +455,7 @@ func RegisterStorageManagementServiceHandlerClient(ctx context.Context, mux *run
 
 	})
 
-	mux.Handle("POST", pattern_StorageManagementService_GetUploadUrl_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_StorageManagementService_GetUploadUrl_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -495,7 +495,7 @@ func RegisterStorageManagementServiceHandlerClient(ctx context.Context, mux *run
 
 	})
 
-	mux.Handle("POST", pattern_StorageManagementService_DeleteUpload_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("DELETE", pattern_StorageManagementService_DeleteUpload_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
