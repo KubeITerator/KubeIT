@@ -5,7 +5,9 @@ plugins:
     opt: paths=source_relative
   - name: go-grpc
     out: .
-    opt: paths=source_relative,require_unimplemented_servers=false
+    opt:
+      - paths=source_relative
+      - require_unimplemented_servers=false
   - name: grpc-gateway
     out: .
     opt:
@@ -15,7 +17,4 @@ plugins:
     out: .
     opt:
       - allow_repeated_fields_in_body=true
-  - name: gorm
-    out: .
-    opt:
-      - paths=source_relative,engine=postgres,enums=string,gateway=true:./example/feature_demo
+      - allow_merge=true

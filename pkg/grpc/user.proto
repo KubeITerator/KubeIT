@@ -37,7 +37,7 @@ service ClientService {
 
   rpc CreateOrUpdateClient (Client) returns (ClientID) {
     option (google.api.http) = {
-      post: "/v1/client/"
+      post: "/v1/client"
       body: "*"
     };
   };
@@ -71,7 +71,7 @@ message TokenID{
 }
 
 message ClientTokenIDRequest{
-  string token = 1;
+  string token_id = 1;
   string client_id = 2;
 }
 

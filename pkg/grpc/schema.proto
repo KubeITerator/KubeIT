@@ -18,13 +18,13 @@ service SchemaManagementService {
     };
   };
 
-  rpc GetSchema (v1alpha2.common.IDRequest) returns (kubeit.v1beta1.StatusReport){
+  rpc GetSchema (kubeit.v1beta1.IDRequest) returns (kubeit.v1beta1.StatusReport){
     option (google.api.http) = {
       get: "/v1/schema/{id}"
     };
   };
 
-  rpc DeleteSchema (v1alpha2.common.IDRequest) returns (kubeit.v1beta1.StatusReport) {
+  rpc DeleteSchema (kubeit.v1beta1.IDRequest) returns (kubeit.v1beta1.StatusReport) {
     option (google.api.http) = {
       delete: "/v1/schema/{id}"
     };

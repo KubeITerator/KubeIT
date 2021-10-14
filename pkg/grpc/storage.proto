@@ -57,9 +57,8 @@ message IDmessage {
 }
 
 
-message File {
+message InputFile {
   string id = 1;
-  string user_id = 2;
   string name = 3;
   StorageInfo storage_info = 4;
   string location = 5;

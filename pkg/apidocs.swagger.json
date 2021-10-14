@@ -1,0 +1,1354 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "grpc/common.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "SchemaManagementService"
+    },
+    {
+      "name": "StorageManagementService"
+    },
+    {
+      "name": "TaskManagementService"
+    },
+    {
+      "name": "ClientService"
+    },
+    {
+      "name": "WorkflowManagementService"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/client": {
+      "post": {
+        "operationId": "ClientService_CreateOrUpdateClient",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1beta1ClientID"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1beta1Client"
+            }
+          }
+        ],
+        "tags": [
+          "ClientService"
+        ]
+      }
+    },
+    "/v1/client/{clientId}": {
+      "get": {
+        "operationId": "ClientService_GetClient",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1beta1Client"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "clientId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "ClientService"
+        ]
+      },
+      "delete": {
+        "operationId": "ClientService_DeleteClient",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1beta1StatusReport"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "clientId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "ClientService"
+        ]
+      },
+      "post": {
+        "operationId": "ClientService_CreateToken",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1beta1Token"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "clientId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1beta1TokenRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ClientService"
+        ]
+      }
+    },
+    "/v1/client/{clientId}/info": {
+      "get": {
+        "operationId": "ClientService_GetClientInfo",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1beta1ClientInfo"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "clientId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "ClientService"
+        ]
+      }
+    },
+    "/v1/client/{clientId}/list": {
+      "get": {
+        "operationId": "ClientService_GetTokenStatusList",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1beta1TokenStatusList"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "clientId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "ClientService"
+        ]
+      }
+    },
+    "/v1/client/{clientId}/token/{tokenId}": {
+      "delete": {
+        "operationId": "ClientService_DeleteToken",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1beta1StatusReport"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "clientId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "tokenId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "ClientService"
+        ]
+      }
+    },
+    "/v1/schema": {
+      "post": {
+        "operationId": "SchemaManagementService_CreateSchema",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1beta1StatusReport"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1beta1Schema"
+            }
+          }
+        ],
+        "tags": [
+          "SchemaManagementService"
+        ]
+      }
+    },
+    "/v1/schema/{id}": {
+      "get": {
+        "operationId": "SchemaManagementService_GetSchema",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1beta1StatusReport"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "SchemaManagementService"
+        ]
+      },
+      "delete": {
+        "operationId": "SchemaManagementService_DeleteSchema",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1beta1StatusReport"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "SchemaManagementService"
+        ]
+      }
+    },
+    "/v1/task": {
+      "post": {
+        "operationId": "TaskManagementService_CreateTask",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1beta1StatusReport"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1beta1Task"
+            }
+          }
+        ],
+        "tags": [
+          "TaskManagementService"
+        ]
+      }
+    },
+    "/v1/task/{id}": {
+      "get": {
+        "operationId": "TaskManagementService_GetTask",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1beta1StatusReport"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "TaskManagementService"
+        ]
+      },
+      "delete": {
+        "operationId": "TaskManagementService_DeleteGroup",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1beta1StatusReport"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "TaskManagementService"
+        ]
+      }
+    },
+    "/v1/upload": {
+      "post": {
+        "operationId": "StorageManagementService_InitUpload",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1beta1IDmessage"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1beta1InitRequest"
+            }
+          }
+        ],
+        "tags": [
+          "StorageManagementService"
+        ]
+      }
+    },
+    "/v1/upload/{transferId}": {
+      "get": {
+        "operationId": "StorageManagementService_GetDownload",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1beta1UrlResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "transferId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "StorageManagementService"
+        ]
+      },
+      "post": {
+        "operationId": "StorageManagementService_DeleteUpload",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1beta1StatusReport"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "transferId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "StorageManagementService"
+        ]
+      }
+    },
+    "/v1/workflow": {
+      "post": {
+        "operationId": "WorkflowManagementService_CreateWorkflow",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1beta1StatusReport"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1beta1Workflow"
+            }
+          }
+        ],
+        "tags": [
+          "WorkflowManagementService"
+        ]
+      }
+    },
+    "/v1/workflow/{id}": {
+      "get": {
+        "operationId": "WorkflowManagementService_GetWorkflow",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1beta1StatusReport"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "WorkflowManagementService"
+        ]
+      },
+      "delete": {
+        "operationId": "WorkflowManagementService_DeleteWorkflow",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1beta1StatusReport"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "WorkflowManagementService"
+        ]
+      }
+    },
+    "/v1/workflow/{id}/status": {
+      "get": {
+        "operationId": "WorkflowManagementService_GetStatus",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1beta1WorkflowStatus"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "WorkflowManagementService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "googlerpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "kubeitv1beta1Status": {
+      "type": "string",
+      "enum": [
+        "INIT",
+        "AVAILABLE",
+        "ERROR"
+      ],
+      "default": "INIT"
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "typeUrl": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "v1beta1Arguments": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      }
+    },
+    "v1beta1Client": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "priority": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "admin": {
+          "type": "boolean"
+        },
+        "tokens": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1beta1Token"
+          }
+        }
+      }
+    },
+    "v1beta1ClientID": {
+      "type": "object",
+      "properties": {
+        "clientId": {
+          "type": "string"
+        }
+      }
+    },
+    "v1beta1ClientInfo": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "priority": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "admin": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1beta1Container": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "image": {
+          "type": "string"
+        },
+        "resubmitPending": {
+          "type": "boolean"
+        },
+        "resources": {
+          "$ref": "#/definitions/v1beta1Resources"
+        },
+        "runAsUser": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "command": {
+          "type": "string"
+        },
+        "args": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "env": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1beta1Env"
+          }
+        }
+      }
+    },
+    "v1beta1Env": {
+      "type": "object",
+      "properties": {
+        "envType": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "nameFrom": {
+          "type": "string"
+        }
+      }
+    },
+    "v1beta1File": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      }
+    },
+    "v1beta1IDmessage": {
+      "type": "object",
+      "properties": {
+        "transferId": {
+          "type": "string"
+        }
+      }
+    },
+    "v1beta1InitRequest": {
+      "type": "object",
+      "properties": {
+        "userid": {
+          "type": "string"
+        },
+        "filename": {
+          "type": "string"
+        },
+        "storageInfo": {
+          "$ref": "#/definitions/v1beta1StorageInfo"
+        }
+      }
+    },
+    "v1beta1InputArtifacts": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "urlHeader": {
+          "type": "string"
+        }
+      }
+    },
+    "v1beta1InputFile": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "storageInfo": {
+          "$ref": "#/definitions/v1beta1StorageInfo"
+        },
+        "location": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/definitions/kubeitv1beta1Status"
+        }
+      }
+    },
+    "v1beta1InputParams": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "default": {
+          "type": "string"
+        }
+      }
+    },
+    "v1beta1Inputs": {
+      "type": "object",
+      "properties": {
+        "params": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1beta1InputParams"
+          }
+        },
+        "artifacts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1beta1InputArtifacts"
+          }
+        }
+      }
+    },
+    "v1beta1Iterator": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "file": {
+          "type": "string"
+        },
+        "parameters": {
+          "type": "string"
+        }
+      }
+    },
+    "v1beta1OutputArtifact": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      }
+    },
+    "v1beta1OutputParams": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "default": {
+          "type": "string"
+        }
+      }
+    },
+    "v1beta1Outputs": {
+      "type": "object",
+      "properties": {
+        "params": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1beta1OutputParams"
+          }
+        },
+        "artifacts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1beta1OutputArtifact"
+          }
+        }
+      }
+    },
+    "v1beta1Parameter": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      }
+    },
+    "v1beta1Parameters": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "default": {
+          "type": "string"
+        },
+        "required": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1beta1Requirement": {
+      "type": "object",
+      "properties": {
+        "memory": {
+          "type": "string"
+        },
+        "cpu": {
+          "type": "string"
+        }
+      }
+    },
+    "v1beta1Resources": {
+      "type": "object",
+      "properties": {
+        "limits": {
+          "$ref": "#/definitions/v1beta1Requirement"
+        },
+        "requests": {
+          "$ref": "#/definitions/v1beta1Requirement"
+        }
+      }
+    },
+    "v1beta1S3Info": {
+      "type": "object",
+      "properties": {
+        "multi": {
+          "type": "boolean"
+        },
+        "part": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "bucket": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        }
+      }
+    },
+    "v1beta1Schema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "priority": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "limit": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "volumes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1beta1Volumes"
+          }
+        },
+        "description": {
+          "type": "string"
+        },
+        "hash": {
+          "type": "string"
+        },
+        "parameters": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1beta1Parameters"
+          }
+        },
+        "input": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1beta1File"
+          }
+        },
+        "output": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1beta1File"
+          }
+        },
+        "tasks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1beta1Tasks"
+          }
+        },
+        "yaml": {
+          "type": "string"
+        }
+      }
+    },
+    "v1beta1StatusReport": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        }
+      }
+    },
+    "v1beta1StorageInfo": {
+      "type": "object",
+      "properties": {
+        "storageType": {
+          "$ref": "#/definitions/v1beta1StorageType"
+        },
+        "s3info": {
+          "$ref": "#/definitions/v1beta1S3Info"
+        }
+      }
+    },
+    "v1beta1StorageType": {
+      "type": "string",
+      "enum": [
+        "S3",
+        "VOLUME",
+        "CORE"
+      ],
+      "default": "S3"
+    },
+    "v1beta1Task": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "inputs": {
+          "$ref": "#/definitions/v1beta1Inputs"
+        },
+        "outputs": {
+          "$ref": "#/definitions/v1beta1Outputs"
+        },
+        "volumeMounts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1beta1VolumeMounts"
+          }
+        },
+        "container": {
+          "$ref": "#/definitions/v1beta1Container"
+        },
+        "initContainer": {
+          "$ref": "#/definitions/v1beta1Container"
+        },
+        "yaml": {
+          "type": "string"
+        }
+      }
+    },
+    "v1beta1Tasks": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "taskId": {
+          "type": "string"
+        },
+        "dependencies": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "arguments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1beta1Arguments"
+          }
+        },
+        "taskInput": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1beta1File"
+          }
+        },
+        "taskOutput": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1beta1File"
+          }
+        },
+        "iterator": {
+          "$ref": "#/definitions/v1beta1Iterator"
+        },
+        "condition": {
+          "type": "string"
+        }
+      }
+    },
+    "v1beta1Token": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "userid": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "token": {
+          "type": "string"
+        },
+        "lastAccessed": {
+          "type": "string"
+        },
+        "from": {
+          "type": "string"
+        }
+      }
+    },
+    "v1beta1TokenRequest": {
+      "type": "object",
+      "properties": {
+        "clientId": {
+          "type": "string"
+        },
+        "tokenName": {
+          "type": "string"
+        }
+      }
+    },
+    "v1beta1TokenStatus": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "lastAccessed": {
+          "type": "string"
+        },
+        "from": {
+          "type": "string"
+        }
+      }
+    },
+    "v1beta1TokenStatusList": {
+      "type": "object",
+      "properties": {
+        "tokens": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1beta1TokenStatus"
+          }
+        }
+      }
+    },
+    "v1beta1UrlResponse": {
+      "type": "object",
+      "properties": {
+        "transferId": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        }
+      }
+    },
+    "v1beta1VolumeMounts": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "mountPath": {
+          "type": "string"
+        }
+      }
+    },
+    "v1beta1Volumes": {
+      "type": "object",
+      "properties": {
+        "volumeName": {
+          "type": "string"
+        },
+        "size": {
+          "type": "string"
+        },
+        "storageClass": {
+          "type": "string"
+        }
+      }
+    },
+    "v1beta1Workflow": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "templateId": {
+          "type": "string"
+        },
+        "hash": {
+          "type": "string"
+        },
+        "parameter": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1beta1Parameter"
+          }
+        },
+        "inputfiles": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1beta1InputFile"
+          }
+        },
+        "status": {
+          "$ref": "#/definitions/v1beta1WorkflowStatus"
+        }
+      }
+    },
+    "v1beta1WorkflowStatus": {
+      "type": "object",
+      "properties": {
+        "workflowId": {
+          "type": "string"
+        },
+        "project": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "podsTotal": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "podsFinished": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "numberOfResults": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    }
+  }
+}

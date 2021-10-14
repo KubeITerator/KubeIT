@@ -9,20 +9,20 @@ import "dependencies/tagger/tagger.proto";
 
 
 service TaskManagementService {
-  rpc CreateTask (Task) returns (v1alpha2.common.StatusReport){
+  rpc CreateTask (Task) returns (kubeit.v1beta1.StatusReport){
     option (google.api.http) = {
       post: "/v1/task"
       body: "*"
     };
   };
 
-  rpc GetTask (kubeit.v1beta1.common.IDRequest) returns (kubeit.v1beta1.StatusReport){
+  rpc GetTask (kubeit.v1beta1.IDRequest) returns (kubeit.v1beta1.StatusReport){
     option (google.api.http) = {
       get: "/v1/task/{id}"
     };
   };
 
-  rpc DeleteGroup (kubeit.v1beta1.common.IDRequest) returns (kubeit.v1beta1.StatusReport) {
+  rpc DeleteGroup (kubeit.v1beta1.IDRequest) returns (kubeit.v1beta1.StatusReport) {
     option (google.api.http) = {
       delete: "/v1/task/{id}"
     };
