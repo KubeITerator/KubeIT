@@ -1,11 +1,11 @@
 syntax = "proto3";
 
-package kubeit.v1beta1.task;
-option go_package = "github.com/KubeITerator/KubeIT/pkg/grpc/task";
+package kubeit.v1beta1;
+option go_package = "github.com/KubeITerator/KubeIT/pkg/grpc/api";
 
-import "pkg/dependencies/google/api/annotations.proto";
-import "pkg/grpc/common.proto";
-import "pkg/dependencies/tagger/tagger.proto";
+import "dependencies/google/api/annotations.proto";
+import "grpc/common.proto";
+import "dependencies/tagger/tagger.proto";
 
 
 service TaskManagementService {
@@ -16,13 +16,13 @@ service TaskManagementService {
     };
   };
 
-  rpc GetTask (kubeit.v1beta1.common.IDRequest) returns (kubeit.v1beta1.common.StatusReport){
+  rpc GetTask (kubeit.v1beta1.common.IDRequest) returns (kubeit.v1beta1.StatusReport){
     option (google.api.http) = {
       get: "/v1/task/{id}"
     };
   };
 
-  rpc DeleteGroup (kubeit.v1beta1.common.IDRequest) returns (kubeit.v1beta1.common.StatusReport) {
+  rpc DeleteGroup (kubeit.v1beta1.common.IDRequest) returns (kubeit.v1beta1.StatusReport) {
     option (google.api.http) = {
       delete: "/v1/task/{id}"
     };
@@ -33,13 +33,13 @@ service TaskManagementService {
 
 message InputParams {
   string name = 1;
-  string value = 2;
+  string default = 2;
 }
 
 message InputArtifacts {
-  string type = 1;
-  string path = 2;
-  string url = 3;
+  string name = 1;
+  string type = 2;
+  string path = 3;
   string url_header = 4;
 }
 
@@ -50,9 +50,8 @@ message Inputs {
 
 message OutputParams {
   string name = 1;
-  string param_type = 2;
-  string path = 3;
-  string default = 4;
+  string path = 2;
+  string default = 3;
 }
 
 message OutputArtifact {
@@ -105,7 +104,8 @@ message Task {
   string description = 3;
   Inputs inputs = 4;
   Outputs outputs = 5;
-  repeated VolumeMounts volume_mounts = 8;
-  Container container = 6;
-  Container init_container = 7;
+  repeated VolumeMounts volume_mounts = 6;
+  Container container = 7;
+  Container init_container = 8;
+  string yaml = 9;
 }

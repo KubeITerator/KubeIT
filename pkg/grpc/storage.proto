@@ -1,11 +1,11 @@
 syntax = "proto3";
 
-package kubeit.v1beta1.storage;
-option go_package = "github.com/KubeITerator/KubeIT/pkg/grpc/storage";
+package kubeit.v1beta1;
+option go_package = "github.com/KubeITerator/KubeIT/pkg/grpc/api";
 
-import "pkg/dependencies/google/api/annotations.proto";
-import "pkg/grpc/common.proto";
-import "pkg/dependencies/tagger/tagger.proto";
+import "dependencies/google/api/annotations.proto";
+import "grpc/common.proto";
+import "dependencies/tagger/tagger.proto";
 
 service StorageManagementService {
   rpc InitUpload (InitRequest) returns (IDmessage){
@@ -22,13 +22,13 @@ service StorageManagementService {
   }
 
 
-  rpc FinishUpload (IDmessage) returns (kubeit.v1beta1.common.StatusReport){
+  rpc FinishUpload (IDmessage) returns (kubeit.v1beta1.StatusReport){
     option (google.api.http) = {
       post: "/v1/upload/{transfer_id}"
     };
   };
 
-  rpc DeleteUpload (IDmessage) returns (kubeit.v1beta1.common.StatusReport) {
+  rpc DeleteUpload (IDmessage) returns (kubeit.v1beta1.StatusReport) {
     option (google.api.http) = {
       post: "/v1/upload/{transfer_id}"
     };

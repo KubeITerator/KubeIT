@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package kubeit.v1beta1.common;
+package kubeit.v1beta1;
 
-option go_package = "github.com/KubeITerator/KubeIT/pkg/grpc/common";
+option go_package = "github.com/KubeITerator/KubeIT/pkg/grpc/api";
 
 message StatusReport{
   string action = 1;

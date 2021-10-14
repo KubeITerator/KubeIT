@@ -1,30 +1,30 @@
 syntax = "proto3";
 
-package kubeit.v1beta1.schema;
+package kubeit.v1beta1;
 
-option go_package = "github.com/KubeITerator/KubeIT/pkg/grpc/schema";
+option go_package = "github.com/KubeITerator/KubeIT/pkg/grpc/api";
 
 
-import "pkg/dependencies/google/api/annotations.proto";
-import "pkg/grpc/common.proto";
-import "pkg/dependencies/tagger/tagger.proto";
+import "dependencies/google/api/annotations.proto";
+import "grpc/common.proto";
+import "dependencies/tagger/tagger.proto";
 
 
 service SchemaManagementService {
-  rpc CreateSchema (Schema) returns (kubeit.v1beta1.common.StatusReport){
+  rpc CreateSchema (Schema) returns (kubeit.v1beta1.StatusReport){
     option (google.api.http) = {
       post: "/v1/schema"
       body: "*"
     };
   };
 
-  rpc GetSchema (v1alpha2.common.IDRequest) returns (kubeit.v1beta1.common.StatusReport){
+  rpc GetSchema (v1alpha2.common.IDRequest) returns (kubeit.v1beta1.StatusReport){
     option (google.api.http) = {
       get: "/v1/schema/{id}"
     };
   };
 
-  rpc DeleteSchema (v1alpha2.common.IDRequest) returns (kubeit.v1beta1.common.StatusReport) {
+  rpc DeleteSchema (v1alpha2.common.IDRequest) returns (kubeit.v1beta1.StatusReport) {
     option (google.api.http) = {
       delete: "/v1/schema/{id}"
     };
@@ -45,7 +45,7 @@ message Parameters {
   bool required = 3;
 }
 
-message Inputfile {
+message File {
   string name = 1;
   string type = 2;
 }
@@ -67,9 +67,10 @@ message Tasks {
   string task_id = 2;
   repeated string dependencies = 3;
   repeated Arguments arguments = 4;
-  repeated Inputfile inputfiles = 5;
-  Iterator iterator = 6;
-  string condition = 7;
+  repeated File task_input = 5;
+  repeated File task_output = 6;
+  Iterator iterator = 7;
+  string condition = 8;
 }
 
 message Schema {
@@ -82,7 +83,8 @@ message Schema {
   string description = 7;
   string hash = 8;
   repeated Parameters parameters = 9;
-  repeated Inputfile inputfiles = 10;
-  repeated Tasks tasks = 11;
-  string yaml = 12;
+  repeated File input = 10;
+  repeated File output = 11;
+  repeated Tasks tasks = 12;
+  string yaml = 13;
 }

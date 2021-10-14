@@ -1,12 +1,12 @@
 syntax = "proto3";
 
-package kubeit.v1beta1.user;
+package kubeit.v1beta1;
 
-option go_package = "github.com/KubeITerator/KubeIT/pkg/grpc/user";
+option go_package = "github.com/KubeITerator/KubeIT/pkg/grpc/api";
 
-import "pkg/dependencies/google/api/annotations.proto";
-import "pkg/grpc/common.proto";
-import "pkg/dependencies/tagger/tagger.proto";
+import "dependencies/google/api/annotations.proto";
+import "grpc/common.proto";
+import "dependencies/tagger/tagger.proto";
 
 
 service ClientService {
@@ -29,7 +29,7 @@ service ClientService {
     };
   };
 
-  rpc DeleteToken (ClientTokenIDRequest) returns (kubeit.v1beta1.common.StatusReport) {
+  rpc DeleteToken (ClientTokenIDRequest) returns (kubeit.v1beta1.StatusReport) {
     option (google.api.http) = {
       delete: "/v1/client/{client_id}/token/{token_id}"
     };
@@ -54,7 +54,7 @@ service ClientService {
     };
   };
 
-  rpc DeleteClient (ClientID) returns (kubeit.v1beta1.common.StatusReport) {
+  rpc DeleteClient (ClientID) returns (kubeit.v1beta1.StatusReport) {
     option (google.api.http) = {
       delete: "/v1/client/{client_id}"
     };

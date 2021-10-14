@@ -1,29 +1,29 @@
 syntax = "proto3";
 
-package kubeit.v1beta1.workflow;
-option go_package = "github.com/KubeITerator/KubeIT/pkg/grpc/workflow";
+package kubeit.v1beta1;
+option go_package = "github.com/KubeITerator/KubeIT/pkg/grpc/api";
 
-import "pkg/dependencies/google/api/annotations.proto";
-import "pkg/grpc/schema.proto";
-import "pkg/grpc/common.proto";
-import "pkg/dependencies/tagger/tagger.proto";
+import "dependencies/google/api/annotations.proto";
+import "grpc/schema.proto";
+import "grpc/common.proto";
+import "dependencies/tagger/tagger.proto";
 
 
 service WorkflowManagementService {
-  rpc CreateWorkflow (Workflow) returns (kubeit.v1beta1.common.StatusReport){
+  rpc CreateWorkflow (Workflow) returns (kubeit.v1beta1.StatusReport){
     option (google.api.http) = {
       post: "/v1/workflow"
       body: "*"
     };
   };
 
-  rpc GetWorkflow (v1alpha2.common.IDRequest) returns (kubeit.v1beta1.common.StatusReport){
+  rpc GetWorkflow (v1alpha2.common.IDRequest) returns (kubeit.v1beta1.StatusReport){
     option (google.api.http) = {
       get: "/v1/workflow/{id}"
     };
   };
 
-  rpc DeleteWorkflow (v1alpha2.common.IDRequest) returns (kubeit.v1beta1.common.StatusReport) {
+  rpc DeleteWorkflow (v1alpha2.common.IDRequest) returns (kubeit.v1beta1.StatusReport) {
     option (google.api.http) = {
       delete: "/v1/workflow/{id}"
     };
@@ -48,7 +48,7 @@ message Workflow {
   string template_id = 3;
   string hash = 4;
   repeated Parameter parameter = 5;
-  repeated kubeit.v1beta1.schema.Inputfiles inputfiles = 6;
+  repeated kubeit.v1beta1.Inputfiles inputfiles = 6;
   WorkflowStatus status = 7;
 }
 
